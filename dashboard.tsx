@@ -918,931 +918,933 @@ export default function DashboardTIKPolda() {
   const clusterNames = ["Disiplin Tinggi", "Disiplin Sedang", "Perlu Pembinaan", "Inkonsisten", "Bermasalah"]
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen bg-gray-50 flex">
+    <>
+    {/* <SidebarProvider> */}
+      {/* <div className="min-h-screen bg-gray-50 flex"> */}
         {/* Sidebar */}
-        <Sidebar>
-          <SidebarHeader>
-            <div className="flex items-center space-x-3 p-4">
-              <img
-                src="https://pbj.divtik.polri.go.id/media/logos/logo-div-tik.png" // Updated sidebar logo
-                alt="TIK Polda Logo"
-                className="h-10 w-10 rounded-full object-contain" // Changed to object-contain for better aspect ratio handling
-              />
-              <div>
-                <h1 className="text-lg font-bold text-gray-900">Dashboard</h1>
-                <p className="text-sm text-gray-600">TIK Polda</p>
-              </div>
-            </div>
-          </SidebarHeader>
+        {/* <Sidebar> */}
+          {/* <SidebarHeader> */}
+            {/* <div className="flex items-center space-x-3 p-4"> */}
+              {/* <img */}
+                {/* src="https://pbj.divtik.polri.go.id/media/logos/logo-div-tik.png" // Updated sidebar logo */}
+                {/* alt="TIK Polda Logo" */}
+                {/* className="h-10 w-10 rounded-full object-contain" // Changed to object-contain for better aspect ratio handling */}
+              {/* /> */}
+              {/* <div> */}
+                {/* <h1 className="text-lg font-bold text-gray-900">Dashboard</h1> */}
+                {/* <p className="text-sm text-gray-600">TIK Polda</p> */}
+              {/* </div> */}
+            {/* </div> */}
+          {/* </SidebarHeader> */}
 
-          <SidebarContent>
-            <SidebarGroup>
-              <SidebarGroupLabel>Menu Utama</SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {[
-                    { id: "dashboard", label: "Dasbor", icon: BarChart3 },
-                    { id: "table", label: "Tabel Data", icon: Table },
-                    { id: "cluster", label: "Analisis Klaster", icon: Scatter3D },
-                    { id: "input", label: "Input Data", icon: Plus },
-                  ].map(({ id, label, icon: Icon }) => (
-                    <SidebarMenuItem key={id}>
-                      <SidebarMenuButton
-                        onClick={() => handlePageChange(id)}
-                        isActive={currentPage === id}
-                        className="w-full justify-start"
-                      >
-                        <Icon className="w-4 h-4" />
-                        <span>{label}</span>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
+          {/* <SidebarContent> */}
+            {/* <SidebarGroup> */}
+              {/* <SidebarGroupLabel>Menu Utama</SidebarGroupLabel> */}
+              {/* <SidebarGroupContent> */}
+                {/* <SidebarMenu> */}
+                  {/* {[ */}
+                    {/* { id: "dashboard", label: "Dasbor", icon: BarChart3 }, */}
+                    {/* { id: "table", label: "Tabel Data", icon: Table }, */}
+                    {/* { id: "cluster", label: "Analisis Klaster", icon: Scatter3D }, */}
+                    {/* { id: "input", label: "Input Data", icon: Plus }, */}
+                  {/* ].map(({ id, label, icon: Icon }) => ( */}
+                    {/* <SidebarMenuItem key={id}> */}
+                      {/* <SidebarMenuButton */}
+                        {/* onClick={() => handlePageChange(id)} */}
+                        {/* isActive={currentPage === id} */}
+                        {/* className="w-full justify-start" */}
+                      {/* > */}
+                        {/* <Icon className="w-4 h-4" /> */}
+                        {/* <span>{label}</span> */}
+                      {/* </SidebarMenuButton> */}
+                    {/* </SidebarMenuItem> */}
+                  {/* ))} */}
+                {/* </SidebarMenu> */}
+              {/* </SidebarGroupContent> */}
+            {/* </SidebarGroup> */}
 
-            <SidebarGroup>
-              <SidebarGroupLabel>Aksi Data</SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      onClick={() => loadDataFromSheets(true)}
-                      disabled={isLoadingFromSheets}
-                      className="w-full justify-start"
-                    >
-                      {isLoadingFromSheets ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <RefreshCw className="w-4 h-4" />
-                      )}
-                      <span>Refresh Data</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
+            {/* <SidebarGroup> */}
+              {/* <SidebarGroupLabel>Aksi Data</SidebarGroupLabel> */}
+              {/* <SidebarGroupContent> */}
+                {/* <SidebarMenu> */}
+                  {/* <SidebarMenuItem> */}
+                    {/* <SidebarMenuButton */}
+                      {/* onClick={() => loadDataFromSheets(true)} */}
+                      {/* disabled={isLoadingFromSheets} */}
+                      {/* className="w-full justify-start" */}
+                    {/* > */}
+                      {/* {isLoadingFromSheets ? ( */}
+                        {/* <Loader2 className="w-4 h-4 animate-spin" /> */}
+                      {/* ) : ( */}
+                        {/* <RefreshCw className="w-4 h-4" /> */}
+                      {/* )} */}
+                      {/* <span>Refresh Data</span> */}
+                    {/* </SidebarMenuButton> */}
+                  {/* </SidebarMenuItem> */}
 
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      onClick={() => fileInputRef.current?.click()}
-                      disabled={isUploadingToSheets}
-                      className="w-full justify-start"
-                    >
-                      {isUploadingToSheets ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <Upload className="w-4 h-4" />
-                      )}
-                      <span>Tambah Data</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
+                  {/* <SidebarMenuItem> */}
+                    {/* <SidebarMenuButton */}
+                      {/* onClick={() => fileInputRef.current?.click()} */}
+                      {/* disabled={isUploadingToSheets} */}
+                      {/* className="w-full justify-start" */}
+                    {/* > */}
+                      {/* {isUploadingToSheets ? ( */}
+                        {/* <Loader2 className="w-4 h-4 animate-spin" /> */}
+                      {/* ) : ( */}
+                        {/* <Upload className="w-4 h-4" /> */}
+                      {/* )} */}
+                      {/* <span>Tambah Data</span> */}
+                    {/* </SidebarMenuButton> */}
+                  {/* </SidebarMenuItem> */}
 
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      onClick={() => fileReplaceInputRef.current?.click()}
-                      disabled={isUploadingToSheets}
-                      className="w-full justify-start"
-                    >
-                      {isUploadingToSheets ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <Upload className="w-4 h-4" />
-                      )}
-                      <span>Ganti Data</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
+                  {/* <SidebarMenuItem> */}
+                    {/* <SidebarMenuButton */}
+                      {/* onClick={() => fileReplaceInputRef.current?.click()} */}
+                      {/* disabled={isUploadingToSheets} */}
+                      {/* className="w-full justify-start" */}
+                    {/* > */}
+                      {/* {isUploadingToSheets ? ( */}
+                        {/* <Loader2 className="w-4 h-4 animate-spin" /> */}
+                      {/* ) : ( */}
+                        {/* <Upload className="w-4 h-4" /> */}
+                      {/* )} */}
+                      {/* <span>Ganti Data</span> */}
+                    {/* </SidebarMenuButton> */}
+                  {/* </SidebarMenuItem> */}
 
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      onClick={uploadToSheets}
-                      disabled={isUploadingToSheets || data.length === 0}
-                      className="w-full justify-start"
-                    >
-                      {isUploadingToSheets ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <Upload className="w-4 h-4" />
-                      )}
-                      <span>Sync Sheets</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
+                  {/* <SidebarMenuItem> */}
+                    {/* <SidebarMenuButton */}
+                      {/* onClick={uploadToSheets} */}
+                      {/* disabled={isUploadingToSheets || data.length === 0} */}
+                      {/* className="w-full justify-start" */}
+                    {/* > */}
+                      {/* {isUploadingToSheets ? ( */}
+                        {/* <Loader2 className="w-4 h-4 animate-spin" /> */}
+                      {/* ) : ( */}
+                        {/* <Upload className="w-4 h-4" /> */}
+                      {/* )} */}
+                      {/* <span>Sync Sheets</span> */}
+                    {/* </SidebarMenuButton> */}
+                  {/* </SidebarMenuItem> */}
 
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      onClick={handleClearData}
-                      className="w-full justify-start text-red-600 hover:text-red-700"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                      <span>Hapus Data</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-          </SidebarContent>
+                  {/* <SidebarMenuItem> */}
+                    {/* <SidebarMenuButton */}
+                      {/* onClick={handleClearData} */}
+                      {/* className="w-full justify-start text-red-600 hover:text-red-700" */}
+                    {/* > */}
+                      {/* <Trash2 className="w-4 h-4" /> */}
+                      {/* <span>Hapus Data</span> */}
+                    {/* </SidebarMenuButton> */}
+                  {/* </SidebarMenuItem> */}
+                {/* </SidebarMenu> */}
+              {/* </SidebarGroupContent> */}
+            {/* </SidebarGroup> */}
+          {/* </SidebarContent> */}
 
-          <SidebarFooter>
-            <div className="p-4 text-xs text-gray-500">
-              <p>Data: {fileName || "Belum ada data"}</p>
-              <p>Records: {data.length}</p>
-            </div>
-          </SidebarFooter>
-        </Sidebar>
+          {/* <SidebarFooter> */}
+            {/* <div className="p-4 text-xs text-gray-500"> */}
+              {/* <p>Data: {fileName || "Belum ada data"}</p> */}
+              {/* <p>Records: {data.length}</p> */}
+            {/* </div> */}
+          {/* </SidebarFooter> */}
+        {/* </Sidebar> */}
 
         {/* Main Content */}
-        <SidebarInset className="flex-1">
+        {/* <SidebarInset className="flex-1"> */}
           {/* Header with Sidebar Trigger */}
-          <header className="sticky top-0 z-50 bg-white shadow-md border-b">
-            <div className="flex items-center justify-between h-16 px-4">
-              <div className="flex items-center space-x-4">
-                <SidebarTrigger />
-                    <h2 className="text-xl font-semibold text-gray-900 capitalize">
-                      {currentPage.replace("-", " ")}
-                </h2>
-              </div>
-            </div>
-          </header>
+          {/* <header className="sticky top-0 z-50 bg-white shadow-md border-b"> */}
+            {/* <div className="flex items-center justify-between h-16 px-4"> */}
+              {/* <div className="flex items-center space-x-4"> */}
+                {/* <SidebarTrigger /> */}
+                    {/* <h2 className="text-xl font-semibold text-gray-900 capitalize"> */}
+                      {/* {currentPage.replace("-", " ")} */}
+                {/* </h2> */}
+              {/* </div> */}
+            {/* </div> */}
+          {/* </header> */}
 
               {/* Status Messages */}
-          {sheetsStatus && (
-            <div className="px-4 py-2">
-                  <div className="p-3 bg-blue-100 border border-blue-300 text-blue-800 rounded-lg shadow-sm">
-                    <p className="text-sm">{sheetsStatus}</p>
-              </div>
-            </div>
-          )}
-              {kmeansError && (
-                 <div className="px-4 py-2">
-                    <div className="p-3 bg-red-100 border border-red-300 text-red-800 rounded-lg shadow-sm">
-                        <p className="text-sm font-semibold">K-Means Error:</p>
-                        <p className="text-sm">{kmeansError}</p>
-                    </div>
-                </div>
-              )}
-              {isKmeansLoading && (
-                <div className="px-4 py-2">
-                    <div className="p-3 bg-yellow-100 border border-yellow-300 text-yellow-800 rounded-lg shadow-sm flex items-center">
-                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                        <p className="text-sm">Menjalankan K-Means di backend...</p>
-                    </div>
-                </div>
-              )}
+          {/* {sheetsStatus && ( */}
+            {/* <div className="px-4 py-2"> */}
+                  {/* <div className="p-3 bg-blue-100 border border-blue-300 text-blue-800 rounded-lg shadow-sm"> */}
+                    {/* <p className="text-sm">{sheetsStatus}</p> */}
+              {/* </div> */}
+            {/* </div> */}
+          {/* )} */}
+              {/* {kmeansError && ( */}
+                 {/* <div className="px-4 py-2"> */}
+                    {/* <div className="p-3 bg-red-100 border border-red-300 text-red-800 rounded-lg shadow-sm"> */}
+                        {/* <p className="text-sm font-semibold">K-Means Error:</p> */}
+                        {/* <p className="text-sm">{kmeansError}</p> */}
+                    {/* </div> */}
+                {/* </div> */}
+              {/* )} */}
+              {/* {isKmeansLoading && ( */}
+                {/* <div className="px-4 py-2"> */}
+                    {/* <div className="p-3 bg-yellow-100 border border-yellow-300 text-yellow-800 rounded-lg shadow-sm flex items-center"> */}
+                        {/* <Loader2 className="w-4 h-4 animate-spin mr-2" /> */}
+                        {/* <p className="text-sm">Menjalankan K-Means di backend...</p> */}
+                    {/* </div> */}
+                {/* </div> */}
+              {/* )} */}
 
 
           {/* Page Content */}
-          <main className={`transition-opacity duration-500 ${fadeClass} p-4`}>
-            {currentPage === "dashboard" && (
-              <div>
+          {/* <main className={`transition-opacity duration-500 ${fadeClass} p-4`}> */}
+            {/* {currentPage === "dashboard" && ( */}
+              {/* <div> */}
                 {/* File Info */}
-                <div className="mb-6 p-4 bg-blue-50 rounded-lg">
-                  <p className="text-sm text-blue-800">
-                    <strong>Sumber Data:</strong> {fileName || "Belum ada data"} | <strong>Total Records:</strong>{" "}
-                    {data.length}
-                  </p>
-                </div>
+                {/* <div className="mb-6 p-4 bg-blue-50 rounded-lg"> */}
+                  {/* <p className="text-sm text-blue-800"> */}
+                    {/* <strong>Sumber Data:</strong> {fileName || "Belum ada data"} | <strong>Total Records:</strong>{" "} */}
+                    {/* {data.length} */}
+                  {/* </p> */}
+                {/* </div> */}
 
                     {/* Interactive Map */}
-                    <div className="mb-8 bg-white p-6 rounded-lg shadow-md">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Peta Sebaran Absensi</h3>
-                      { data.length > 0 ? (
-                        <InteractiveMap records={filteredData} selectedDate={selectedDate} />
-                      ) : (
-                        <p className="text-gray-500">Tidak ada data untuk ditampilkan di peta.</p>
-                      )}
-                    </div>
+                    {/* <div className="mb-8 bg-white p-6 rounded-lg shadow-md"> */}
+                      {/* <h3 className="text-lg font-semibold text-gray-900 mb-4">Peta Sebaran Absensi</h3> */}
+                      {/* { data.length > 0 ? ( */}
+                        {/* <InteractiveMap records={filteredData} selectedDate={selectedDate} /> */}
+                      {/* ) : ( */}
+                        {/* <p className="text-gray-500">Tidak ada data untuk ditampilkan di peta.</p> */}
+                      {/* )} */}
+                    {/* </div> */}
 
                 {/* Data Statistics */}
-                <DataStats data={data} fileName={fileName} />
+                {/* <DataStats data={data} fileName={fileName} /> */}
 
                 {/* Date Filter */}
-                {uniqueDates.length > 0 && (
-                  <div className="mb-6">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Filter Tanggal:</label>
-                    <select
-                      value={selectedDate}
-                      onChange={(e) => setSelectedDate(e.target.value)}
-                      className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    >
-                      {uniqueDates.map((date) => (
-                        <option key={date} value={date}>
-                          {date}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
+                {/* {uniqueDates.length > 0 && ( */}
+                  {/* <div className="mb-6"> */}
+                    {/* <label className="block text-sm font-medium text-gray-700 mb-2">Filter Tanggal:</label> */}
+                    {/* <select */}
+                      {/* value={selectedDate} */}
+                      {/* onChange={(e) => setSelectedDate(e.target.value)} */}
+                      {/* className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" */}
+                    {/* > */}
+                      {/* {uniqueDates.map((date) => ( */}
+                        {/* <option key={date} value={date}> */}
+                          {/* {date} */}
+                        {/* </option> */}
+                      {/* ))} */}
+                    {/* </select> */}
+                  {/* </div> */}
+                {/* )} */}
 
                 {/* KPI Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                  <div className="bg-white p-6 rounded-lg shadow-md">
-                    <div className="flex items-center">
-                      <Users className="w-8 h-8 text-blue-600" />
-                      <div className="ml-4">
-                        <p className="text-sm font-medium text-gray-600">Total Kehadiran</p>
-                        <p className="text-2xl font-bold text-gray-900">{kpis.total}</p>
-                      </div>
-                    </div>
-                  </div>
+                {/* <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8"> */}
+                  {/* <div className="bg-white p-6 rounded-lg shadow-md"> */}
+                    {/* <div className="flex items-center"> */}
+                      {/* <Users className="w-8 h-8 text-blue-600" /> */}
+                      {/* <div className="ml-4"> */}
+                        {/* <p className="text-sm font-medium text-gray-600">Total Kehadiran</p> */}
+                        {/* <p className="text-2xl font-bold text-gray-900">{kpis.total}</p> */}
+                      {/* </div> */}
+                    {/* </div> */}
+                  {/* </div> */}
 
-                  <div className="bg-white p-6 rounded-lg shadow-md">
-                    <div className="flex items-center">
-                      <Clock className="w-8 h-8 text-green-600" />
-                      <div className="ml-4">
-                        <p className="text-sm font-medium text-gray-600">Hadir</p>
-                        <p className="text-2xl font-bold text-gray-900">{kpis.hadir}</p>
-                      </div>
-                    </div>
-                  </div>
+                  {/* <div className="bg-white p-6 rounded-lg shadow-md"> */}
+                    {/* <div className="flex items-center"> */}
+                      {/* <Clock className="w-8 h-8 text-green-600" /> */}
+                      {/* <div className="ml-4"> */}
+                        {/* <p className="text-sm font-medium text-gray-600">Hadir</p> */}
+                        {/* <p className="text-2xl font-bold text-gray-900">{kpis.hadir}</p> */}
+                      {/* </div> */}
+                    {/* </div> */}
+                  {/* </div> */}
 
-                  <div className="bg-white p-6 rounded-lg shadow-md">
-                    <div className="flex items-center">
-                      <AlertTriangle className="w-8 h-8 text-red-600" />
-                      <div className="ml-4">
-                        <p className="text-sm font-medium text-gray-600">Terlambat</p>
-                        <p className="text-2xl font-bold text-gray-900">{kpis.terlambat}</p>
-                      </div>
-                    </div>
-                  </div>
+                  {/* <div className="bg-white p-6 rounded-lg shadow-md"> */}
+                    {/* <div className="flex items-center"> */}
+                      {/* <AlertTriangle className="w-8 h-8 text-red-600" /> */}
+                      {/* <div className="ml-4"> */}
+                        {/* <p className="text-sm font-medium text-gray-600">Terlambat</p> */}
+                        {/* <p className="text-2xl font-bold text-gray-900">{kpis.terlambat}</p> */}
+                      {/* </div> */}
+                    {/* </div> */}
+                  {/* </div> */}
 
-                  <div className="bg-white p-6 rounded-lg shadow-md">
-                    <div className="flex items-center">
-                      <TrendingUp className="w-8 h-8 text-purple-600" />
-                      <div className="ml-4">
-                        <p className="text-sm font-medium text-gray-600">Tingkat Kehadiran</p>
-                        <p className="text-2xl font-bold text-gray-900">{kpis.hadirRate}%</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                  {/* <div className="bg-white p-6 rounded-lg shadow-md"> */}
+                    {/* <div className="flex items-center"> */}
+                      {/* <TrendingUp className="w-8 h-8 text-purple-600" /> */}
+                      {/* <div className="ml-4"> */}
+                        {/* <p className="text-sm font-medium text-gray-600">Tingkat Kehadiran</p> */}
+                        {/* <p className="text-2xl font-bold text-gray-900">{kpis.hadirRate}%</p> */}
+                      {/* </div> */}
+                    {/* </div> */}
+                  {/* </div> */}
+                {/* </div> */}
 
                 {/* Charts */}
-                {data.length > 0 && (
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                {/* {data.length > 0 && ( */}
+                  {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8"> */}
                     {/* Status Pie Chart */}
-                    <div className="bg-white p-6 rounded-lg shadow-md">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Distribusi Status Kehadiran</h3>
-                      <ResponsiveContainer width="100%" height={300}>
-                        <PieChart>
-                          <Pie
-                            data={statusChartData}
-                            cx="50%"
-                            cy="50%"
-                            labelLine={false}
-                            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                            outerRadius={80}
-                            fill="#8884d8"
-                            dataKey="value"
-                          >
-                            {statusChartData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={entry.color} />
-                            ))}
-                          </Pie>
-                          <Tooltip />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </div>
+                    {/* <div className="bg-white p-6 rounded-lg shadow-md"> */}
+                      {/* <h3 className="text-lg font-semibold text-gray-900 mb-4">Distribusi Status Kehadiran</h3> */}
+                      {/* <ResponsiveContainer width="100%" height={300}> */}
+                        {/* <PieChart> */}
+                          {/* <Pie */}
+                            {/* data={statusChartData} */}
+                            {/* cx="50%" */}
+                            {/* cy="50%" */}
+                            {/* labelLine={false} */}
+                            {/* label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} */}
+                            {/* outerRadius={80} */}
+                            {/* fill="#8884d8" */}
+                            {/* dataKey="value" */}
+                          {/* > */}
+                            {/* {statusChartData.map((entry, index) => ( */}
+                              {/* <Cell key={`cell-${index}`} fill={entry.color} /> */}
+                            {/* ))} */}
+                          {/* </Pie> */}
+                          {/* <Tooltip /> */}
+                        {/* </PieChart> */}
+                      {/* </ResponsiveContainer> */}
+                    {/* </div> */}
 
                     {/* Unit Bar Chart */}
-                    <div className="bg-white p-6 rounded-lg shadow-md">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Kehadiran per Unit</h3>
-                      <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={unitChartData}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="unit" />
-                          <YAxis />
-                          <Tooltip />
-                          <Bar dataKey="count" fill="#0088FE" />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </div>
-                )}
+                    {/* <div className="bg-white p-6 rounded-lg shadow-md"> */}
+                      {/* <h3 className="text-lg font-semibold text-gray-900 mb-4">Kehadiran per Unit</h3> */}
+                      {/* <ResponsiveContainer width="100%" height={300}> */}
+                        {/* <BarChart data={unitChartData}> */}
+                          {/* <CartesianGrid strokeDasharray="3 3" /> */}
+                          {/* <XAxis dataKey="unit" /> */}
+                          {/* <YAxis /> */}
+                          {/* <Tooltip /> */}
+                          {/* <Bar dataKey="count" fill="#0088FE" /> */}
+                        {/* </BarChart> */}
+                      {/* </ResponsiveContainer> */}
+                    {/* </div> */}
+                  {/* </div> */}
+                {/* )} */}
 
                 {/* Hourly Trend */}
-                {hourlyChartData.length > 0 && (
-                  <div className="bg-white p-6 rounded-lg shadow-md">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Tren Kehadiran per Jam</h3>
-                    <ResponsiveContainer width="100%" height={300}>
-                      <LineChart data={hourlyChartData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="hour" />
-                        <YAxis />
-                        <Tooltip />
-                        <Line type="monotone" dataKey="count" stroke="#00C49F" strokeWidth={2} />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </div>
-                )}
+                {/* {hourlyChartData.length > 0 && ( */}
+                  {/* <div className="bg-white p-6 rounded-lg shadow-md"> */}
+                    {/* <h3 className="text-lg font-semibold text-gray-900 mb-4">Tren Kehadiran per Jam</h3> */}
+                    {/* <ResponsiveContainer width="100%" height={300}> */}
+                      {/* <LineChart data={hourlyChartData}> */}
+                        {/* <CartesianGrid strokeDasharray="3 3" /> */}
+                        {/* <XAxis dataKey="hour" /> */}
+                        {/* <YAxis /> */}
+                        {/* <Tooltip /> */}
+                        {/* <Line type="monotone" dataKey="count" stroke="#00C49F" strokeWidth={2} /> */}
+                      {/* </LineChart> */}
+                    {/* </ResponsiveContainer> */}
+                  {/* </div> */}
+                {/* )} */}
 
                 {/* No Data Message */}
-                {data.length === 0 && (
-                  <div className="bg-white p-8 rounded-lg shadow-md text-center">
-                    <div className="text-gray-400 mb-4">
-                      <BarChart3 className="w-16 h-16 mx-auto" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Belum Ada Data</h3>
-                    <p className="text-gray-600 mb-4">
-                      Silakan unggah file CSV atau tambah data melalui menu Input Data untuk mulai menganalisis.
-                    </p>
-                    <button
-                      onClick={() => fileInputRef.current?.click()}
-                      className="inline-flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                      <Upload className="w-4 h-4" />
-                      <span>Unggah Data CSV</span>
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
+                {/* {data.length === 0 && ( */}
+                  {/* <div className="bg-white p-8 rounded-lg shadow-md text-center"> */}
+                    {/* <div className="text-gray-400 mb-4"> */}
+                      {/* <BarChart3 className="w-16 h-16 mx-auto" /> */}
+                    {/* </div> */}
+                    {/* <h3 className="text-lg font-semibold text-gray-900 mb-2">Belum Ada Data</h3> */}
+                    {/* <p className="text-gray-600 mb-4"> */}
+                      {/* Silakan unggah file CSV atau tambah data melalui menu Input Data untuk mulai menganalisis. */}
+                    {/* </p> */}
+                    {/* <button */}
+                      {/* onClick={() => fileInputRef.current?.click()} */}
+                      {/* className="inline-flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors" */}
+                    {/* > */}
+                      {/* <Upload className="w-4 h-4" /> */}
+                      {/* <span>Unggah Data CSV</span> */}
+                    {/* </button> */}
+                  {/* </div> */}
+                {/* )} */}
+              {/* </div> */}
+            {/* )} */}
 
-            {currentPage === "table" && (
-              <div>
+            {/* {currentPage === "table" && ( */}
+              {/* <div> */}
                 {/* Search */}
-                <div className="mb-6">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                    <input
-                      type="text"
-                      placeholder="Cari data..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-                </div>
+                {/* <div className="mb-6"> */}
+                  {/* <div className="relative"> */}
+                    {/* <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" /> */}
+                    {/* <input */}
+                      {/* type="text" */}
+                      {/* placeholder="Cari data..." */}
+                      {/* value={searchTerm} */}
+                      {/* onChange={(e) => setSearchTerm(e.target.value)} */}
+                      {/* className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" */}
+                    {/* /> */}
+                  {/* </div> */}
+                {/* </div> */}
 
                 {/* Data Table */}
-                {data.length > 0 ? (
-                  <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                          <tr>
-                            {Object.keys(data[0] || {}).map((header) => (
-                              <th
-                                key={header}
-                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                              >
-                                {header}
-                              </th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                          {searchFilteredData.map((record, index) => (
-                            <tr key={index} className="hover:bg-gray-50">
-                              {Object.entries(record).map(([key, value]) => (
-                                <td key={key} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                  {key === "URL Foto" ? (
-                                    <a
-                                      href={value}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-blue-600 hover:text-blue-800"
-                                    >
-                                      Lihat Foto
-                                    </a>
-                                  ) : (
-                                    value
-                                  )}
-                                </td>
-                              ))}
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="bg-white p-8 rounded-lg shadow-md text-center">
-                    <div className="text-gray-400 mb-4">
-                      <Table className="w-16 h-16 mx-auto" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Belum Ada Data</h3>
-                    <p className="text-gray-600">Silakan unggah data terlebih dahulu untuk melihat tabel.</p>
-                  </div>
-                )}
-              </div>
-            )}
+                {/* {data.length > 0 ? ( */}
+                  {/* <div className="bg-white rounded-lg shadow-md overflow-hidden"> */}
+                    {/* <div className="overflow-x-auto"> */}
+                      {/* <table className="min-w-full divide-y divide-gray-200"> */}
+                        {/* <thead className="bg-gray-50"> */}
+                          {/* <tr> */}
+                            {/* {Object.keys(data[0] || {}).map((header) => ( */}
+                              {/* <th */}
+                                {/* key={header} */}
+                                {/* className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" */}
+                              {/* > */}
+                                {/* {header} */}
+                              {/* </th> */}
+                            {/* ))} */}
+                          {/* </tr> */}
+                        {/* </thead> */}
+                        {/* <tbody className="bg-white divide-y divide-gray-200"> */}
+                          {/* {searchFilteredData.map((record, index) => ( */}
+                            {/* <tr key={index} className="hover:bg-gray-50"> */}
+                              {/* {Object.entries(record).map(([key, value]) => ( */}
+                                {/* <td key={key} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900"> */}
+                                  {/* {key === "URL Foto" ? ( */}
+                                    {/* <a */}
+                                      {/* href={value} */}
+                                      {/* target="_blank" */}
+                                      {/* rel="noopener noreferrer" */}
+                                      {/* className="text-blue-600 hover:text-blue-800" */}
+                                    {/* > */}
+                                      {/* Lihat Foto */}
+                                    {/* </a> */}
+                                  {/* ) : ( */}
+                                    {/* value */}
+                                  {/* )} */}
+                                {/* </td> */}
+                              {/* ))} */}
+                            {/* </tr> */}
+                          {/* ))} */}
+                        {/* </tbody> */}
+                      {/* </table> */}
+                    {/* </div> */}
+                  {/* </div> */}
+                {/* ) : ( */}
+                  {/* <div className="bg-white p-8 rounded-lg shadow-md text-center"> */}
+                    {/* <div className="text-gray-400 mb-4"> */}
+                      {/* <Table className="w-16 h-16 mx-auto" /> */}
+                    {/* </div> */}
+                    {/* <h3 className="text-lg font-semibold text-gray-900 mb-2">Belum Ada Data</h3> */}
+                    {/* <p className="text-gray-600">Silakan unggah data terlebih dahulu untuk melihat tabel.</p> */}
+                  {/* </div> */}
+                {/* )} */}
+              {/* </div> */}
+            {/* )} */}
 
-            {currentPage === "cluster" && (
-              <div>
-                {data.length > 0 && clusterLabels.length > 0 && personnelFeatures.length > 0 ? (
-                  <>
+            {/* {currentPage === "cluster" && ( */}
+              {/* <div> */}
+                {/* {data.length > 0 && clusterLabels.length > 0 && personnelFeatures.length > 0 ? ( */}
+                  {/* <> */}
                     {/* K-Means Controls & Summary Cards */}
-                    <div className="mb-6 p-4 bg-white rounded-lg shadow-md">
-                      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-                        <div className="flex items-center space-x-4">
-                          <label htmlFor="kValueSelect" className="text-sm font-medium text-gray-700">Jumlah Klaster (K):</label>
-                          <select
-                            id="kValueSelect"
-                            value={kValue}
-                            onChange={(e) => setKValue(Number.parseInt(e.target.value))}
-                            disabled={isKmeansLoading}
-                            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-70"
-                          >
-                            {[2, 3, 4, 5].map((k) => (
-                              <option key={k} value={k}>
-                                {k}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                        <button
-                          onClick={generateAIAnalysis}
-                          disabled={isAnalyzing || isKmeansLoading || clusterLabels.length === 0}
-                          className="flex items-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50"
-                        >
-                          {isAnalyzing ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                          ) : (
-                            <Scatter3D className="w-4 h-4" /> /* Consider a more AI-specific icon */
-                          )}
-                          <span>{isAnalyzing ? "Menganalisis..." : "Buat Analisis AI"}</span>
-                        </button>
-                      </div>
+                    {/* <div className="mb-6 p-4 bg-white rounded-lg shadow-md"> */}
+                      {/* <div className="flex flex-wrap items-center justify-between gap-4 mb-6"> */}
+                        {/* <div className="flex items-center space-x-4"> */}
+                          {/* <label htmlFor="kValueSelect" className="text-sm font-medium text-gray-700">Jumlah Klaster (K):</label> */}
+                          {/* <select */}
+                            {/* id="kValueSelect" */}
+                            {/* value={kValue} */}
+                            {/* onChange={(e) => setKValue(Number.parseInt(e.target.value))} */}
+                            {/* disabled={isKmeansLoading} */}
+                            {/* className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-70" */}
+                          {/* > */}
+                            {/* {[2, 3, 4, 5].map((k) => ( */}
+                              {/* <option key={k} value={k}> */}
+                                {/* {k} */}
+                              {/* </option> */}
+                            {/* ))} */}
+                          {/* </select> */}
+                        {/* </div> */}
+                        {/* <button */}
+                          {/* onClick={generateAIAnalysis} */}
+                          {/* disabled={isAnalyzing || isKmeansLoading || clusterLabels.length === 0} */}
+                          {/* className="flex items-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50" */}
+                        {/* > */}
+                          {/* {isAnalyzing ? ( */}
+                            {/* <Loader2 className="w-4 h-4 animate-spin" /> */}
+                          {/* ) : ( */}
+                            {/* <Scatter3D className="w-4 h-4" /> / Consider a more AI-specific icon / */}
+                          {/* )} */}
+                          {/* <span>{isAnalyzing ? "Menganalisis..." : "Buat Analisis AI"}</span> */}
+                        {/* </button> */}
+                      {/* </div> */}
 
                       {/* Cluster Summary Cards */}
                       {/* Adjusted lg:grid-cols-kValue to a fixed number or a dynamic class based on kValue */}
-                      <div className={`grid grid-cols-1 md:grid-cols-2 ${kValue <= 4 ? `lg:grid-cols-${kValue}` : 'lg:grid-cols-4'} gap-4 mb-6`}>
-                        {Array.from({ length: kValue }, (_, i) => {
-                          const membersInThisCluster = personnelFeatures.filter((pf, index) => clusterLabels[index] === i);
-                          const clusterName = clusterNames[i] || `Klaster ${i + 1}`;
-                          return (
-                            <div 
-                              key={`summary-card-${i}`}
-                              className="p-4 rounded-lg shadow-sm border"
-                              style={{ borderColor: COLORS[i % COLORS.length], backgroundColor: `${COLORS[i % COLORS.length]}1A` }} // Light background based on cluster color
-                            >
-                              <h4 className="text-md font-semibold mb-1" style={{ color: COLORS[i % COLORS.length] }}>{clusterName}</h4>
-                              <p className="text-2xl font-bold text-gray-800">{membersInThisCluster.length}</p>
-                              <p className="text-xs text-gray-600">Personel</p>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
+                      {/* <div className={`grid grid-cols-1 md:grid-cols-2 ${kValue <= 4 ? `lg:grid-cols-${kValue}` : 'lg:grid-cols-4'} gap-4 mb-6`}> */}
+                        {/* {Array.from({ length: kValue }, (_, i) => { */}
+                          {/* const membersInThisCluster = personnelFeatures.filter((pf, index) => clusterLabels[index] === i); */}
+                          {/* const clusterName = clusterNames[i] || `Klaster ${i + 1}`; */}
+                          {/* return ( */}
+                            {/* <div  */}
+                              {/* key={`summary-card-${i}`} */}
+                              {/* className="p-4 rounded-lg shadow-sm border" */}
+                              {/* style={{ borderColor: COLORS[i % COLORS.length], backgroundColor: `${COLORS[i % COLORS.length]}1A` }} // Light background based on cluster color */}
+                            {/* > */}
+                              {/* <h4 className="text-md font-semibold mb-1" style={{ color: COLORS[i % COLORS.length] }}>{clusterName}</h4> */}
+                              {/* <p className="text-2xl font-bold text-gray-800">{membersInThisCluster.length}</p> */}
+                              {/* <p className="text-xs text-gray-600">Personel</p> */}
+                            {/* </div> */}
+                          {/* ); */}
+                        {/* })} */}
+                      {/* </div> */}
+                    {/* </div> */}
                     
                     {/* Charts Side-by-Side: Pie Chart and Radar Chart */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                    {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8"> */}
                         {/* Pie Chart Distribusi Klaster */}
-                        <div className="bg-white p-6 rounded-lg shadow-md">
-                             <h3 className="text-lg font-semibold text-gray-900 mb-4">Distribusi Personel per Klaster</h3>
-                             <ResponsiveContainer width="100%" height={300}>
-                                <PieChart>
-                                    <Pie
-                                        data={Array.from({ length: kValue }, (_, i) => ({
-                                            name: clusterNames[i] || `Klaster ${i + 1}`,
-                                            value: clusterLabels.filter(label => label === i).length,
-                                        }))}
-                                        cx="50%"
-                                        cy="50%"
-                                        labelLine={false}
-                                        label={({ name, percent, value }) => value > 0 ? `${name} (${(percent * 100).toFixed(0)}%)` : ''}
-                                        outerRadius={100}
-                                        fill="#8884d8"
-                                        dataKey="value"
-                                    >
-                                        {Array.from({ length: kValue }, (_, i) => (
-                                            <Cell key={`cell-pie-${i}`} fill={COLORS[i % COLORS.length]} />
-                                        ))}
-                                    </Pie>
-                                    <Tooltip />
-                                    <Legend />
-                                </PieChart>
-                            </ResponsiveContainer>
-                        </div>
+                        {/* <div className="bg-white p-6 rounded-lg shadow-md"> */}
+                             {/* <h3 className="text-lg font-semibold text-gray-900 mb-4">Distribusi Personel per Klaster</h3> */}
+                             {/* <ResponsiveContainer width="100%" height={300}> */}
+                                {/* <PieChart> */}
+                                    {/* <Pie */}
+                                        {/* data={Array.from({ length: kValue }, (_, i) => ({ */}
+                                            {/* name: clusterNames[i] || `Klaster ${i + 1}`, */}
+                                            {/* value: clusterLabels.filter(label => label === i).length, */}
+                                        {/* }))} */}
+                                        {/* cx="50%" */}
+                                        {/* cy="50%" */}
+                                        {/* labelLine={false} */}
+                                        {/* label={({ name, percent, value }) => value > 0 ? `${name} (${(percent * 100).toFixed(0)}%)` : ''} */}
+                                        {/* outerRadius={100} */}
+                                        {/* fill="#8884d8" */}
+                                        {/* dataKey="value" */}
+                                    {/* > */}
+                                        {/* {Array.from({ length: kValue }, (_, i) => ( */}
+                                            {/* <Cell key={`cell-pie-${i}`} fill={COLORS[i % COLORS.length]} /> */}
+                                        {/* ))} */}
+                                    {/* </Pie> */}
+                                    {/* <Tooltip /> */}
+                                    {/* <Legend /> */}
+                                {/* </PieChart> */}
+                            {/* </ResponsiveContainer> */}
+                        {/* </div> */}
 
                         {/* Radar Chart Karakteristik Klaster */}
-                        <div className="bg-white p-6 rounded-lg shadow-md">
-                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Karakteristik Rata-rata Klaster</h3>
-                            <ResponsiveContainer width="100%" height={300}>
-                                <RadarChart cx="50%" cy="50%" outerRadius="80%" data={
-                                    Array.from({ length: kValue }, (_, i) => {
-                                        const members = personnelFeatures.filter((pf, index) => clusterLabels[index] === i);
-                                        if (members.length === 0) return null; // Skip if no members
+                        {/* <div className="bg-white p-6 rounded-lg shadow-md"> */}
+                            {/* <h3 className="text-lg font-semibold text-gray-900 mb-4">Karakteristik Rata-rata Klaster</h3> */}
+                            {/* <ResponsiveContainer width="100%" height={300}> */}
+                                {/* <RadarChart cx="50%" cy="50%" outerRadius="80%" data={ */}
+                                    {/* Array.from({ length: kValue }, (_, i) => { */}
+                                        {/* const members = personnelFeatures.filter((pf, index) => clusterLabels[index] === i); */}
+                                        {/* if (members.length === 0) return null; // Skip if no members */}
 
-                                        // Calculate average for each feature for this cluster
-                                        const avgTotalHadir = members.reduce((sum, m) => sum + m.total_hadir, 0) / members.length;
-                                        const avgTotalTerlambat = members.reduce((sum, m) => sum + m.total_terlambat, 0) / members.length;
-                                        const avgTotalIzin = members.reduce((sum, m) => sum + m.total_izin, 0) / members.length;
-                                        // Rata2 jam masuk is already an average, so we average the averages
-                                        const avgJamMasuk = members.reduce((sum, m) => sum + m.rata2_jam_masuk, 0) / members.length; 
-                                        const avgAkurasiLokasi = members.reduce((sum, m) => sum + m.rata2_akurasi_lokasi, 0) / members.length;
-                                        const avgIpBerbeda = members.reduce((sum, m) => sum + m.jumlah_ip_berbeda, 0) / members.length;
-                                        const avgPerangkatBerbeda = members.reduce((sum, m) => sum + m.jumlah_perangkat_berbeda, 0) / members.length;
+                                        {/* // Calculate average for each feature for this cluster */}
+                                        {/* const avgTotalHadir = members.reduce((sum, m) => sum + m.total_hadir, 0) / members.length; */}
+                                        {/* const avgTotalTerlambat = members.reduce((sum, m) => sum + m.total_terlambat, 0) / members.length; */}
+                                        {/* const avgTotalIzin = members.reduce((sum, m) => sum + m.total_izin, 0) / members.length; */}
+                                        {/* // Rata2 jam masuk is already an average, so we average the averages */}
+                                        {/* const avgJamMasuk = members.reduce((sum, m) => sum + m.rata2_jam_masuk, 0) / members.length;  */}
+                                        {/* const avgAkurasiLokasi = members.reduce((sum, m) => sum + m.rata2_akurasi_lokasi, 0) / members.length; */}
+                                        {/* const avgIpBerbeda = members.reduce((sum, m) => sum + m.jumlah_ip_berbeda, 0) / members.length; */}
+                                        {/* const avgPerangkatBerbeda = members.reduce((sum, m) => sum + m.jumlah_perangkat_berbeda, 0) / members.length; */}
 
-                                        return {
-                                            subject: clusterNames[i] || `Klaster ${i + 1}`,
-                                            A: avgTotalHadir, // "Total Hadir"
-                                            B: avgTotalTerlambat, // "Total Terlambat"
-                                            C: avgTotalIzin, // "Total Izin"
-                                            D: avgJamMasuk, // "Jam Masuk (avg min)" - convert to HH:MM for display if needed
-                                            E: avgAkurasiLokasi, // "Akurasi Lokasi (avg m)"
-                                            F: avgIpBerbeda, // "Variasi IP (avg)"
-                                            G: avgPerangkatBerbeda, // "Variasi Perangkat (avg)"
-                                            fullMark: Math.max( // Calculate fullMark dynamically based on max values across all clusters for each category
-                                                ...personnelFeatures.map(pf => pf.total_hadir), // Example for 'A'
-                                                ...personnelFeatures.map(pf => pf.total_terlambat),
-                                                ...personnelFeatures.map(pf => pf.total_izin),
-                                                600, // Max jam masuk (e.g. 10:00 = 600 min) - adjust as needed
-                                                100, // Max akurasi (e.g. 100m) - adjust
-                                                10, // Max IP (e.g. 10) - adjust
-                                                5   // Max perangkat - adjust
-                                            ) // This fullMark logic needs refinement for each axis
-                                        };
-                                    }).filter(Boolean) // Remove null entries for clusters with no members
-                                }>
-                                    <PolarGrid />
-                                    <PolarAngleAxis dataKey="subject" />
-                                    <PolarRadiusAxis angle={30} domain={[0, 'auto']} /> {/* Adjust domain based on typical data ranges */}
+                                        {/* return { */}
+                                            {/* subject: clusterNames[i] || `Klaster ${i + 1}`, */}
+                                            {/* A: avgTotalHadir, // "Total Hadir" */}
+                                            {/* B: avgTotalTerlambat, // "Total Terlambat" */}
+                                            {/* C: avgTotalIzin, // "Total Izin" */}
+                                            {/* D: avgJamMasuk, // "Jam Masuk (avg min)" - convert to HH:MM for display if needed */}
+                                            {/* E: avgAkurasiLokasi, // "Akurasi Lokasi (avg m)" */}
+                                            {/* F: avgIpBerbeda, // "Variasi IP (avg)" */}
+                                            {/* G: avgPerangkatBerbeda, // "Variasi Perangkat (avg)" */}
+                                            {/* fullMark: Math.max( // Calculate fullMark dynamically based on max values across all clusters for each category */}
+                                                {/* ...personnelFeatures.map(pf => pf.total_hadir), // Example for 'A' */}
+                                                {/* ...personnelFeatures.map(pf => pf.total_terlambat), */}
+                                                {/* ...personnelFeatures.map(pf => pf.total_izin), */}
+                                                {/* 600, // Max jam masuk (e.g. 10:00 = 600 min) - adjust as needed */}
+                                                {/* 100, // Max akurasi (e.g. 100m) - adjust */}
+                                                {/* 10, // Max IP (e.g. 10) - adjust */}
+                                                {/* 5   // Max perangkat - adjust */}
+                                            {/* ) // This fullMark logic needs refinement for each axis */}
+                                        {/* }; */}
+                                    {/* }).filter(Boolean) // Remove null entries for clusters with no members */}
+                                {/* }> */}
+                                    {/* <PolarGrid /> */}
+                                    {/* <PolarAngleAxis dataKey="subject" /> */}
+                                    {/* <PolarRadiusAxis angle={30} domain={[0, 'auto']} /> / Adjust domain based on typical data ranges / */}
                                     
                                     {/* Define Radar for each metric - this part needs to be dynamic if comparing clusters directly on one chart */}
-                                    {/* For now, this structure assumes 'subject' is the cluster and A, B, C are metrics.
-                                        If we want to show each cluster as a separate line, the data structure needs to be:
-                                        [ { metric: "Total Hadir", Klaster1: val1, Klaster2: val2 ... }, ... ]
-                                        Let's adjust for the current structure first, showing one radar per cluster if needed, or one radar comparing all.
-                                        The current data structure is for one radar per cluster.
-                                        To compare all clusters in one radar chart, we need to transform the data.
-                                    */}
+                                    {/* For now, this structure assumes 'subject' is the cluster and A, B, C are metrics. */}
+                                        {/* If we want to show each cluster as a separate line, the data structure needs to be: */}
+                                        {/* [ { metric: "Total Hadir", Klaster1: val1, Klaster2: val2 ... }, ... ] */}
+                                        {/* Let's adjust for the current structure first, showing one radar per cluster if needed, or one radar comparing all. */}
+                                        {/* The current data structure is for one radar per cluster. */}
+                                        {/* To compare all clusters in one radar chart, we need to transform the data. */}
+
                                     
                                     {/* Example: One line per cluster, comparing metrics */}
-                                    {Array.from({ length: kValue }, (_, i) => {
-                                        // This check is actually done by .filter(Boolean) on the data prop already
-                                        // const members = personnelFeatures.filter((pf, index) => clusterLabels[index] === i);
-                                        // if (members.length === 0) return null;
-                                        return (
-                                            <Radar 
-                                                key={`radar-${i}`}
-                                                name={clusterNames[i] || `Klaster ${i + 1}`} 
-                                                dataKey={clusterNames[i] || `Klaster ${i + 1}`} // This needs to match the transformed data structure
-                                                stroke={COLORS[i % COLORS.length]} 
-                                                fill={COLORS[i % COLORS.length]} 
-                                                fillOpacity={0.6} 
-                                            />
-                                        );
-                                    })}
-                                    {/* This Radar setup is incorrect for comparing clusters.
-                                        The `data` prop of RadarChart should be an array of objects,
-                                        where each object represents a point on the angle axis (a metric).
-                                        Each object should then have keys for each cluster.
-                                        Example:
-                                        [
-                                          { metric: 'Total Hadir', Klaster1: 10, Klaster2: 12, Klaster3: 8, fullMark: 15 },
-                                          { metric: 'Keterlambatan', Klaster1: 2, Klaster2: 1, Klaster3: 5, fullMark: 5 },
-                                          ...
-                                        ]
-                                    */}
+                                    {/* {Array.from({ length: kValue }, (_, i) => { */}
+                                        {/* // This check is actually done by .filter(Boolean) on the data prop already */}
+                                        {/* // const members = personnelFeatures.filter((pf, index) => clusterLabels[index] === i); */}
+                                        {/* // if (members.length === 0) return null; */}
+                                        {/* return ( */}
+                                            {/* <Radar  */}
+                                                {/* key={`radar-${i}`} */}
+                                                {/* name={clusterNames[i] || `Klaster ${i + 1}`}  */}
+                                                {/* dataKey={clusterNames[i] || `Klaster ${i + 1}`} // This needs to match the transformed data structure */}
+                                                {/* stroke={COLORS[i % COLORS.length]}  */}
+                                                {/* fill={COLORS[i % COLORS.length]}  */}
+                                                {/* fillOpacity={0.6}  */}
+                                            {/* /> */}
+                                        {/* ); */}
+                                    {/* })} */}
+                                    {/* This Radar setup is incorrect for comparing clusters. */}
+                                        {/* The `data` prop of RadarChart should be an array of objects, */}
+                                        {/* where each object represents a point on the angle axis (a metric). */}
+                                        {/* Each object should then have keys for each cluster. */}
+                                        {/* Example: */}
+                                        {/* [ */}
+                                          {/* { metric: 'Total Hadir', Klaster1: 10, Klaster2: 12, Klaster3: 8, fullMark: 15 }, */}
+                                          {/* { metric: 'Keterlambatan', Klaster1: 2, Klaster2: 1, Klaster3: 5, fullMark: 5 }, */}
+                                          {/* ... */}
+                                        {/* ] */}
+
                                     {/* Correct Radar Implementation */}
-                                    {(() => {
-                                        const metrics = [
-                                            { key: 'avgTotalHadir', name: 'Avg Hadir', max: 0},
-                                            { key: 'avgTotalTerlambat', name: 'Avg Terlambat', max: 0 },
-                                            { key: 'avgTotalIzin', name: 'Avg Izin', max: 0 },
-                                            { key: 'avgJamMasuk', name: 'Avg Jam Masuk (min)', max: 0 }, // Max e.g., 18*60 = 1080
-                                            { key: 'avgAkurasiLokasi', name: 'Avg Akurasi (m)', max: 0 }, // Max e.g., 100
-                                            { key: 'avgIpBerbeda', name: 'Avg IP Unik', max: 0 },
-                                            { key: 'avgPerangkatBerbeda', name: 'Avg Perangkat Unik', max: 0 }
-                                        ];
+                                    {/* {(() => { */}
+                                        {/* const metrics = [ */}
+                                            {/* { key: 'avgTotalHadir', name: 'Avg Hadir', max: 0}, */}
+                                            {/* { key: 'avgTotalTerlambat', name: 'Avg Terlambat', max: 0 }, */}
+                                            {/* { key: 'avgTotalIzin', name: 'Avg Izin', max: 0 }, */}
+                                            {/* { key: 'avgJamMasuk', name: 'Avg Jam Masuk (min)', max: 0 }, // Max e.g., 18*60 = 1080 */}
+                                            {/* { key: 'avgAkurasiLokasi', name: 'Avg Akurasi (m)', max: 0 }, // Max e.g., 100 */}
+                                            {/* { key: 'avgIpBerbeda', name: 'Avg IP Unik', max: 0 }, */}
+                                            {/* { key: 'avgPerangkatBerbeda', name: 'Avg Perangkat Unik', max: 0 } */}
+                                        {/* ]; */}
 
-                                        const radarChartData = metrics.map(metric => {
-                                            const entry: any = { metric: metric.name };
-                                            let currentMax = 0;
-                                            Array.from({ length: kValue }, (_, i) => {
-                                                const clusterKey = clusterNames[i] || `Klaster ${i + 1}`;
-                                                const members = personnelFeatures.filter((pf, index) => clusterLabels[index] === i);
-                                                if (members.length > 0) {
-                                                    let value = 0;
-                                                    switch (metric.key) {
-                                                        case 'avgTotalHadir': value = members.reduce((sum, m) => sum + m.total_hadir, 0) / members.length; break;
-                                                        case 'avgTotalTerlambat': value = members.reduce((sum, m) => sum + m.total_terlambat, 0) / members.length; break;
-                                                        case 'avgTotalIzin': value = members.reduce((sum, m) => sum + m.total_izin, 0) / members.length; break;
-                                                        case 'avgJamMasuk': value = members.reduce((sum, m) => sum + m.rata2_jam_masuk, 0) / members.length; break;
-                                                        case 'avgAkurasiLokasi': value = members.reduce((sum, m) => sum + m.rata2_akurasi_lokasi, 0) / members.length; break;
-                                                        case 'avgIpBerbeda': value = members.reduce((sum, m) => sum + m.jumlah_ip_berbeda, 0) / members.length; break;
-                                                        case 'avgPerangkatBerbeda': value = members.reduce((sum, m) => sum + m.jumlah_perangkat_berbeda, 0) / members.length; break;
-                                                    }
-                                                    entry[clusterKey] = parseFloat(value.toFixed(2));
-                                                    if (entry[clusterKey] > currentMax) currentMax = entry[clusterKey];
-                                                } else {
-                                                    entry[clusterKey] = 0;
-                                                }
-                                            });
-                                            // A simple way to set fullMark, might need per-metric thought
-                                            entry.fullMark = currentMax > 0 ? Math.ceil(currentMax * 1.2) : 1; // Add 20% buffer or default to 1
-                                            if (metric.key === 'avgJamMasuk') entry.fullMark = Math.max(currentMax, 600); // e.g. max 10:00
-                                            if (metric.key === 'avgAkurasiLokasi') entry.fullMark = Math.max(currentMax, 50); // e.g. max 50m
-                                            return entry;
-                                        });
+                                        {/* const radarChartData = metrics.map(metric => { */}
+                                            {/* const entry: any = { metric: metric.name }; */}
+                                            {/* let currentMax = 0; */}
+                                            {/* Array.from({ length: kValue }, (_, i) => { */}
+                                                {/* const clusterKey = clusterNames[i] || `Klaster ${i + 1}`; */}
+                                                {/* const members = personnelFeatures.filter((pf, index) => clusterLabels[index] === i); */}
+                                                {/* if (members.length > 0) { */}
+                                                    {/* let value = 0; */}
+                                                    {/* switch (metric.key) { */}
+                                                        {/* case 'avgTotalHadir': value = members.reduce((sum, m) => sum + m.total_hadir, 0) / members.length; break; */}
+                                                        {/* case 'avgTotalTerlambat': value = members.reduce((sum, m) => sum + m.total_terlambat, 0) / members.length; break; */}
+                                                        {/* case 'avgTotalIzin': value = members.reduce((sum, m) => sum + m.total_izin, 0) / members.length; break; */}
+                                                        {/* case 'avgJamMasuk': value = members.reduce((sum, m) => sum + m.rata2_jam_masuk, 0) / members.length; break; */}
+                                                        {/* case 'avgAkurasiLokasi': value = members.reduce((sum, m) => sum + m.rata2_akurasi_lokasi, 0) / members.length; break; */}
+                                                        {/* case 'avgIpBerbeda': value = members.reduce((sum, m) => sum + m.jumlah_ip_berbeda, 0) / members.length; break; */}
+                                                        {/* case 'avgPerangkatBerbeda': value = members.reduce((sum, m) => sum + m.jumlah_perangkat_berbeda, 0) / members.length; break; */}
+                                                    {/* } */}
+                                                    {/* entry[clusterKey] = parseFloat(value.toFixed(2)); */}
+                                                    {/* if (entry[clusterKey] > currentMax) currentMax = entry[clusterKey]; */}
+                                                {/* } else { */}
+                                                    {/* entry[clusterKey] = 0; */}
+                                                {/* } */}
+                                            {/* }); */}
+                                            {/* // A simple way to set fullMark, might need per-metric thought */}
+                                            {/* entry.fullMark = currentMax > 0 ? Math.ceil(currentMax * 1.2) : 1; // Add 20% buffer or default to 1 */}
+                                            {/* if (metric.key === 'avgJamMasuk') entry.fullMark = Math.max(currentMax, 600); // e.g. max 10:00 */}
+                                            {/* if (metric.key === 'avgAkurasiLokasi') entry.fullMark = Math.max(currentMax, 50); // e.g. max 50m */}
+                                            {/* return entry; */}
+                                        {/* }); */}
                                         
-                                        if (radarChartData.every(d => metrics.every(m => d[(clusterNames[0] || `Klaster 1`)] === undefined))) {
-                                            return <p className="text-gray-500 text-center py-10">Data tidak cukup untuk Radar Chart.</p>;
-                                        }
+                                        {/* if (radarChartData.every(d => metrics.every(m => d[(clusterNames[0] || `Klaster 1`)] === undefined))) { */}
+                                            {/* return <p className="text-gray-500 text-center py-10">Data tidak cukup untuk Radar Chart.</p>; */}
+                                        {/* } */}
 
-                                        return (
-                                            <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarChartData}>
-                                                <PolarGrid />
-                                                <PolarAngleAxis dataKey="metric" tick={{ fontSize: 10 }} />
-                                                <PolarRadiusAxis angle={30} domain={[0, 'auto']} tickFormatter={(value) => value.toFixed(0)} />
-                                                {Array.from({ length: kValue }, (_, i) => {
-                                                    const clusterNameKey = clusterNames[i] || `Klaster ${i + 1}`;
-                                                     // Check if this cluster has any data in the radarChartData
-                                                    if (radarChartData.some(d => d[clusterNameKey] !== undefined && d[clusterNameKey] > 0)) {
-                                                        return (
-                                                            <Radar
-                                                                key={`radar-series-${i}`}
-                                                                name={clusterNameKey}
-                                                                dataKey={clusterNameKey}
-                                                                stroke={COLORS[i % COLORS.length]}
-                                                                fill={COLORS[i % COLORS.length]}
-                                                                fillOpacity={0.5}
-                                                            />
-                                                        );
-                                                    }
-                                                    return null;
-                                                })}
-                                                <Legend />
-                                                <Tooltip />
-                                            </RadarChart>
-                                        );
-                                    })()}
-                                </ResponsiveContainer>
-                        </div>
-                    </div>
+                                        {/* return ( */}
+                                            {/* <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarChartData}> */}
+                                                {/* <PolarGrid /> */}
+                                                {/* <PolarAngleAxis dataKey="metric" tick={{ fontSize: 10 }} /> */}
+                                                {/* <PolarRadiusAxis angle={30} domain={[0, 'auto']} tickFormatter={(value) => value.toFixed(0)} /> */}
+                                                {/* {Array.from({ length: kValue }, (_, i) => { */}
+                                                    {/* const clusterNameKey = clusterNames[i] || `Klaster ${i + 1}`; */}
+                                                     {/* // Check if this cluster has any data in the radarChartData */}
+                                                    {/* if (radarChartData.some(d => d[clusterNameKey] !== undefined && d[clusterNameKey] > 0)) { */}
+                                                        {/* return ( */}
+                                                            {/* <Radar */}
+                                                                {/* key={`radar-series-${i}`} */}
+                                                                {/* name={clusterNameKey} */}
+                                                                {/* dataKey={clusterNameKey} */}
+                                                                {/* stroke={COLORS[i % COLORS.length]} */}
+                                                                {/* fill={COLORS[i % COLORS.length]} */}
+                                                                {/* fillOpacity={0.5} */}
+                                                            {/* /> */}
+                                                        {/* ); */}
+                                                    {/* } */}
+                                                    {/* return null; */}
+                                                {/* })} */}
+                                                {/* <Legend /> */}
+                                                {/* <Tooltip /> */}
+                                            {/* </RadarChart> */}
+                                        {/* ); */}
+                                    {/* })()} */}
+                                {/* </ResponsiveContainer> */}
+                        {/* </div> */}
+                    {/* </div> */}
 
                     {/* Cluster Visualization (Scatter Plot) */}
-                    <div className="bg-white p-6 rounded-lg shadow-md mb-8">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Visualisasi Pola Klaster (K-Means)</h3>
-                      <ResponsiveContainer width="100%" height={500}>
-                        <ScatterChart>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis
-                            type="number"
-                            dataKey="x"
-                            name="Rata-rata Waktu Kedatangan (menit)"
-                            label={{
-                              value: "Rata-rata Waktu Kedatangan (menit)",
-                              position: "insideBottom",
-                              offset: -10,
-                            }}
-                          />
-                          <YAxis
-                            type="number"
-                            dataKey="y"
-                            name="Tingkat Keterlambatan (%)"
-                            label={{ value: "Tingkat Keterlambatan (%)", angle: -90, position: "insideLeft" }}
-                          />
-                          <Tooltip
-                            cursor={{ strokeDasharray: "3 3" }}
-                            content={({ active, payload }) => {
-                              if (active && payload && payload[0]) {
-                                const data = payload[0].payload as ClusterPoint
-                                return (
-                                  <div className="bg-white p-3 border border-gray-300 rounded-lg shadow-lg">
-                                    <p className="font-semibold">{data.record.Nama}</p>
-                                    <p>Unit: {data.record.Unit}</p>
-                                    <p>Klaster: {clusterNames[data.cluster]}</p>
-                                    <p>
-                                      Avg Kedatangan: {Math.floor(data.x / 60)}:
-                                      {String(Math.floor(data.x % 60)).padStart(2, "0")}
-                                    </p>
-                                    <p>Tingkat Terlambat: {data.y.toFixed(1)}%</p>
-                                  </div>
-                                )
-                              }
-                              return null
-                            }}
-                          />
-                          <Legend />
+                    {/* <div className="bg-white p-6 rounded-lg shadow-md mb-8"> */}
+                      {/* <h3 className="text-lg font-semibold text-gray-900 mb-4">Visualisasi Pola Klaster (K-Means)</h3> */}
+                      {/* <ResponsiveContainer width="100%" height={500}> */}
+                        {/* <ScatterChart> */}
+                          {/* <CartesianGrid strokeDasharray="3 3" /> */}
+                          {/* <XAxis */}
+                            {/* type="number" */}
+                            {/* dataKey="x" */}
+                            {/* name="Rata-rata Waktu Kedatangan (menit)" */}
+                            {/* label={{ */}
+                              {/* value: "Rata-rata Waktu Kedatangan (menit)", */}
+                              {/* position: "insideBottom", */}
+                              {/* offset: -10, */}
+                            {/* }} */}
+                          {/* /> */}
+                          {/* <YAxis */}
+                            {/* type="number" */}
+                            {/* dataKey="y" */}
+                            {/* name="Tingkat Keterlambatan (%)" */}
+                            {/* label={{ value: "Tingkat Keterlambatan (%)", angle: -90, position: "insideLeft" }} */}
+                          {/* /> */}
+                          {/* <Tooltip */}
+                            {/* cursor={{ strokeDasharray: "3 3" }} */}
+                            {/* content={({ active, payload }) => { */}
+                              {/* if (active && payload && payload[0]) { */}
+                                {/* const data = payload[0].payload as ClusterPoint */}
+                                {/* return ( */}
+                                  {/* <div className="bg-white p-3 border border-gray-300 rounded-lg shadow-lg"> */}
+                                    {/* <p className="font-semibold">{data.record.Nama}</p> */}
+                                    {/* <p>Unit: {data.record.Unit}</p> */}
+                                    {/* <p>Klaster: {clusterNames[data.cluster]}</p> */}
+                                    {/* <p> */}
+                                      {/* Avg Kedatangan: {Math.floor(data.x / 60)}: */}
+                                      {/* {String(Math.floor(data.x % 60)).padStart(2, "0")} */}
+                                    {/* </p> */}
+                                    {/* <p>Tingkat Terlambat: {data.y.toFixed(1)}%</p> */}
+                                  {/* </div> */}
+                                {/* ) */}
+                              {/* } */}
+                              {/* return null */}
+                            {/* }} */}
+                          {/* /> */}
+                          {/* <Legend /> */}
                           {/* Render Scatter points based on `clusters` which now uses backend labels */}
-                          {Array.from({ length: kValue }, (_, i) => {
-                            const pointsInCluster = clusters.filter(p => p.cluster === i && (selectedCluster === null || selectedCluster === i));
-                            if (pointsInCluster.length === 0 && !(selectedCluster === null || selectedCluster === i) ) return null; // Don't render if no points and not explicitly selected
+                          {/* {Array.from({ length: kValue }, (_, i) => { */}
+                            {/* const pointsInCluster = clusters.filter(p => p.cluster === i && (selectedCluster === null || selectedCluster === i)); */}
+                            {/* if (pointsInCluster.length === 0 && !(selectedCluster === null || selectedCluster === i) ) return null; // Don't render if no points and not explicitly selected */}
                             
-                            return (
-                              <Scatter
-                                key={`cluster-scatter-${i}`}
-                                name={clusterNames[i] || `Klaster ${i + 1}`}
-                                data={pointsInCluster}
-                                fill={COLORS[i % COLORS.length]}
-                                onClick={() => setSelectedCluster(selectedCluster === i ? null : i)}
-                                style={{ cursor: "pointer" }}
-                              />
-                            );
-                          })}
-                        </ScatterChart>
-                      </ResponsiveContainer>
+                            {/* return ( */}
+                              {/* <Scatter */}
+                                {/* key={`cluster-scatter-${i}`} */}
+                                {/* name={clusterNames[i] || `Klaster ${i + 1}`} */}
+                                {/* data={pointsInCluster} */}
+                                {/* fill={COLORS[i % COLORS.length]} */}
+                                {/* onClick={() => setSelectedCluster(selectedCluster === i ? null : i)} */}
+                                {/* style={{ cursor: "pointer" }} */}
+                              {/* /> */}
+                            {/* ); */}
+                          {/* })} */}
+                        {/* </ScatterChart> */}
+                      {/* </ResponsiveContainer> */}
 
                       {/* Cluster Legend */}
-                      <div className="mt-4 flex flex-wrap gap-4">
-                        {Array.from({ length: kValue }, (_, i) => {
-                          // Count members directly from `clusterLabels` and `personnelFeatures`
-                          // to ensure it reflects the backend output accurately.
-                          const clusterMemberCount = clusterLabels.filter(label => label === i).length;
-                          return (
-                            <button
-                              key={`legend-btn-${i}`}
-                              onClick={() => setSelectedCluster(selectedCluster === i ? null : i)}
-                              disabled={isKmeansLoading}
-                              className={`flex items-center space-x-2 px-3 py-2 rounded-lg border transition-colors ${
-                                selectedCluster === i
-                                  ? "bg-gray-200 border-gray-500 ring-2 ring-gray-500"
-                                  : "border-gray-300 hover:bg-gray-100"
-                              } ${isKmeansLoading ? "opacity-50 cursor-not-allowed" : ""}`}
-                            >
-                              <div className="w-4 h-4 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
-                              <span className="text-sm font-medium">
-                                {clusterNames[i] || `Klaster ${i + 1}`} ({clusterMemberCount})
-                              </span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
+                      {/* <div className="mt-4 flex flex-wrap gap-4"> */}
+                        {/* {Array.from({ length: kValue }, (_, i) => { */}
+                          {/* // Count members directly from `clusterLabels` and `personnelFeatures` */}
+                          {/* // to ensure it reflects the backend output accurately. */}
+                          {/* const clusterMemberCount = clusterLabels.filter(label => label === i).length; */}
+                          {/* return ( */}
+                            {/* <button */}
+                              {/* key={`legend-btn-${i}`} */}
+                              {/* onClick={() => setSelectedCluster(selectedCluster === i ? null : i)} */}
+                              {/* disabled={isKmeansLoading} */}
+                              {/* className={`flex items-center space-x-2 px-3 py-2 rounded-lg border transition-colors ${ */}
+                                {/* selectedCluster === i */}
+                                  {/* ? "bg-gray-200 border-gray-500 ring-2 ring-gray-500" */}
+                                  {/* : "border-gray-300 hover:bg-gray-100" */}
+                              {/* } ${isKmeansLoading ? "opacity-50 cursor-not-allowed" : ""}`} */}
+                            {/* > */}
+                              {/* <div className="w-4 h-4 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} /> */}
+                              {/* <span className="text-sm font-medium"> */}
+                                {/* {clusterNames[i] || `Klaster ${i + 1}`} ({clusterMemberCount}) */}
+                              {/* </span> */}
+                            {/* </button> */}
+                          {/* ); */}
+                        {/* })} */}
+                      {/* </div> */}
+                    {/* </div> */}
 
                     {/* Interactive Personnel Table */}
-                    <div className="bg-white p-6 rounded-lg shadow-md mt-8">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Detail Personel per Klaster</h3>
+                    {/* <div className="bg-white p-6 rounded-lg shadow-md mt-8"> */}
+                        {/* <h3 className="text-lg font-semibold text-gray-900 mb-4">Detail Personel per Klaster</h3> */}
                         {/* Filters: Cluster, Unit, Name Search */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4"> */}
                             {/* Cluster Filter */}
-                            <div>
-                                <label htmlFor="tableClusterFilter" className="block text-sm font-medium text-gray-700">Filter Klaster:</label>
-                                <select 
-                                    id="tableClusterFilter"
-                                    value={tableClusterFilter} 
-                                    onChange={(e) => setTableClusterFilter(e.target.value)}
-                                    disabled={isKmeansLoading || personnelFeatures.length === 0}
-                                    className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm disabled:opacity-70"
-                                >
-                                    <option value="all">Semua Klaster</option>
-                                    {Array.from({ length: kValue }, (_, i) => (
-                                        <option key={`filter-opt-${i}`} value={i}>
-                                            {clusterNames[i] || `Klaster ${i + 1}`}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
+                            {/* <div> */}
+                                {/* <label htmlFor="tableClusterFilter" className="block text-sm font-medium text-gray-700">Filter Klaster:</label> */}
+                                {/* <select  */}
+                                    {/* id="tableClusterFilter" */}
+                                    {/* value={tableClusterFilter}  */}
+                                    {/* onChange={(e) => setTableClusterFilter(e.target.value)} */}
+                                    {/* disabled={isKmeansLoading || personnelFeatures.length === 0} */}
+                                    {/* className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm disabled:opacity-70" */}
+                                {/* > */}
+                                    {/* <option value="all">Semua Klaster</option> */}
+                                    {/* {Array.from({ length: kValue }, (_, i) => ( */}
+                                        {/* <option key={`filter-opt-${i}`} value={i}> */}
+                                            {/* {clusterNames[i] || `Klaster ${i + 1}`} */}
+                                        {/* </option> */}
+                                    {/* ))} */}
+                                {/* </select> */}
+                            {/* </div> */}
                             {/* Unit Filter (Dropdown of unique units) */}
-                            <div>
-                                <label htmlFor="tableUnitFilter" className="block text-sm font-medium text-gray-700">Filter Unit Kerja:</label>
-                                <select 
-                                    id="tableUnitFilter"
-                                    value={tableUnitFilter}
-                                    onChange={(e) => setTableUnitFilter(e.target.value)}
-                                    disabled={isKmeansLoading || personnelFeatures.length === 0}
-                                    className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm disabled:opacity-70"
-                                >
-                                    <option value="all">Semua Unit</option>
-                                    {[...new Set(personnelFeatures.map(pf => pf.record.Unit || "Tidak Diketahui"))].sort().map(unit => (
-                                        <option key={unit} value={unit}>{unit}</option>
-                                    ))}
-                                </select>
-                            </div>
+                            {/* <div> */}
+                                {/* <label htmlFor="tableUnitFilter" className="block text-sm font-medium text-gray-700">Filter Unit Kerja:</label> */}
+                                {/* <select  */}
+                                    {/* id="tableUnitFilter" */}
+                                    {/* value={tableUnitFilter} */}
+                                    {/* onChange={(e) => setTableUnitFilter(e.target.value)} */}
+                                    {/* disabled={isKmeansLoading || personnelFeatures.length === 0} */}
+                                    {/* className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm disabled:opacity-70" */}
+                                {/* > */}
+                                    {/* <option value="all">Semua Unit</option> */}
+                                    {/* {[...new Set(personnelFeatures.map(pf => pf.record.Unit || "Tidak Diketahui"))].sort().map(unit => ( */}
+                                        {/* <option key={unit} value={unit}>{unit}</option> */}
+                                    {/* ))} */}
+                                {/* </select> */}
+                            {/* </div> */}
                             {/* Name Search */}
-                            <div>
-                                <label htmlFor="tableNameSearch" className="block text-sm font-medium text-gray-700">Cari Nama Personel:</label>
-                                <input 
-                                    type="text" 
-                                    id="tableNameSearch"
-                                    value={tableNameSearchTerm}
-                                    onChange={(e) => setTableNameSearchTerm(e.target.value)}
-                                    disabled={isKmeansLoading || personnelFeatures.length === 0}
-                                    className="mt-1 block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm disabled:opacity-70"
-                                    placeholder="Ketik nama..."
-                                />
-                            </div>
-                        </div>
+                            {/* <div> */}
+                                {/* <label htmlFor="tableNameSearch" className="block text-sm font-medium text-gray-700">Cari Nama Personel:</label> */}
+                                {/* <input  */}
+                                    {/* type="text"  */}
+                                    {/* id="tableNameSearch" */}
+                                    {/* value={tableNameSearchTerm} */}
+                                    {/* onChange={(e) => setTableNameSearchTerm(e.target.value)} */}
+                                    {/* disabled={isKmeansLoading || personnelFeatures.length === 0} */}
+                                    {/* className="mt-1 block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm disabled:opacity-70" */}
+                                    {/* placeholder="Ketik nama..." */}
+                                {/* /> */}
+                            {/* </div> */}
+                        {/* </div> */}
 
                         {/* Table */}
-                        <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-50">
-                                    <tr>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">NRP</th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit</th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Klaster</th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Avg Jam Masuk</th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Terlambat</th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Izin</th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">IP Unik</th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Device Unik</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
-                                    {(() => {
-                                        const filteredPersonnel = personnelFeatures
-                                            .map((pf, index) => ({ ...pf, clusterLabel: clusterLabels[index] })) // Add clusterLabel to each personnel feature object
-                                            .filter(pf => 
-                                                (tableClusterFilter === "all" || (pf.clusterLabel !== undefined && pf.clusterLabel.toString() === tableClusterFilter)) &&
-                                                (tableUnitFilter === "all" || (pf.record.Unit || "Tidak Diketahui") === tableUnitFilter) &&
-                                                (tableNameSearchTerm === "" || (pf.record.Nama || "").toLowerCase().includes(tableNameSearchTerm.toLowerCase()))
-                                            );
+                        {/* <div className="overflow-x-auto"> */}
+                            {/* <table className="min-w-full divide-y divide-gray-200"> */}
+                                {/* <thead className="bg-gray-50"> */}
+                                    {/* <tr> */}
+                                        {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">NRP</th> */}
+                                        {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th> */}
+                                        {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit</th> */}
+                                        {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Klaster</th> */}
+                                        {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Avg Jam Masuk</th> */}
+                                        {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Terlambat</th> */}
+                                        {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Izin</th> */}
+                                        {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">IP Unik</th> */}
+                                        {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Device Unik</th> */}
+                                    {/* </tr> */}
+                                {/* </thead> */}
+                                {/* <tbody className="bg-white divide-y divide-gray-200"> */}
+                                    {/* {(() => { */}
+                                        {/* const filteredPersonnel = personnelFeatures */}
+                                            {/* .map((pf, index) => ({ ...pf, clusterLabel: clusterLabels[index] })) // Add clusterLabel to each personnel feature object */}
+                                            {/* .filter(pf =>  */}
+                                                {/* (tableClusterFilter === "all" || (pf.clusterLabel !== undefined && pf.clusterLabel.toString() === tableClusterFilter)) && */}
+                                                {/* (tableUnitFilter === "all" || (pf.record.Unit || "Tidak Diketahui") === tableUnitFilter) && */}
+                                                {/* (tableNameSearchTerm === "" || (pf.record.Nama || "").toLowerCase().includes(tableNameSearchTerm.toLowerCase())) */}
+                                            {/* ); */}
 
-                                        if (filteredPersonnel.length === 0) {
-                                            return (
-                                                <tr>
-                                                    <td colSpan={9} className="text-center py-4 text-gray-500">
-                                                        Tidak ada data personel yang cocok dengan filter.
-                                                    </td>
-                                                </tr>
-                                            );
-                                        }
+                                        {/* if (filteredPersonnel.length === 0) { */}
+                                            {/* return ( */}
+                                                {/* <tr> */}
+                                                    {/* <td colSpan={9} className="text-center py-4 text-gray-500"> */}
+                                                        {/* Tidak ada data personel yang cocok dengan filter. */}
+                                                    {/* </td> */}
+                                                {/* </tr> */}
+                                            {/* ); */}
+                                        {/* } */}
 
-                                        return filteredPersonnel.map((pf, index) => (
-                                            <tr key={pf.nrp || `person-${index}-${pf.clusterLabel}`}>
-                                                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">{pf.record.NRP}</td>
-                                                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 font-medium">{pf.record.Nama}</td>
-                                                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">{pf.record.Unit || "Tidak Diketahui"}</td>
-                                                <td className="px-4 py-2 whitespace-nowrap text-sm">
-                                                    <span 
-                                                        className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
-                                                        style={{
-                                                            backgroundColor: `${COLORS[pf.clusterLabel % COLORS.length]}33`, 
-                                                            color: COLORS[pf.clusterLabel % COLORS.length]
-                                                        }}
-                                                    >
-                                                        {clusterNames[pf.clusterLabel] || `Klaster ${pf.clusterLabel + 1}`}
-                                                    </span>
-                                                </td>
-                                                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
-                                                    {`${Math.floor(pf.rata2_jam_masuk / 60)}:${String(Math.floor(pf.rata2_jam_masuk % 60)).padStart(2, "0")}`}
-                                                </td>
-                                                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">{pf.total_terlambat}</td>
-                                                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">{pf.total_izin}</td>
-                                                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">{pf.jumlah_ip_berbeda}</td>
-                                                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">{pf.jumlah_perangkat_berbeda}</td>
-                                            </tr>
-                                        ));
-                                    })()}
-                                </tbody>
-                            </table>
-                        </div>
-                         {(personnelFeatures.length === 0 && !isKmeansLoading) && <p className="text-center text-gray-500 py-4">Tidak ada data personel untuk ditampilkan.</p>}
-                    </div>
+                                        {/* return filteredPersonnel.map((pf, index) => ( */}
+                                            {/* <tr key={pf.nrp || `person-${index}-${pf.clusterLabel}`}> */}
+                                                {/* <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">{pf.record.NRP}</td> */}
+                                                {/* <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 font-medium">{pf.record.Nama}</td> */}
+                                                {/* <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">{pf.record.Unit || "Tidak Diketahui"}</td> */}
+                                                {/* <td className="px-4 py-2 whitespace-nowrap text-sm"> */}
+                                                    {/* <span  */}
+                                                        {/* className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full" */}
+                                                        {/* style={{ */}
+                                                            {/* backgroundColor: `${COLORS[pf.clusterLabel % COLORS.length]}33`,  */}
+                                                            {/* color: COLORS[pf.clusterLabel % COLORS.length] */}
+                                                        {/* }} */}
+                                                    {/* > */}
+                                                        {/* {clusterNames[pf.clusterLabel] || `Klaster ${pf.clusterLabel + 1}`} */}
+                                                    {/* </span> */}
+                                                {/* </td> */}
+                                                {/* <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700"> */}
+                                                    {/* {`${Math.floor(pf.rata2_jam_masuk / 60)}:${String(Math.floor(pf.rata2_jam_masuk % 60)).padStart(2, "0")}`} */}
+                                                {/* </td> */}
+                                                {/* <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">{pf.total_terlambat}</td> */}
+                                                {/* <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">{pf.total_izin}</td> */}
+                                                {/* <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">{pf.jumlah_ip_berbeda}</td> */}
+                                                {/* <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">{pf.jumlah_perangkat_berbeda}</td> */}
+                                            {/* </tr> */}
+                                        {/* )); */}
+                                    {/* })()} */}
+                                {/* </tbody> */}
+                            {/* </table> */}
+                        {/* </div> */}
+                         {/* {(personnelFeatures.length === 0 && !isKmeansLoading) && <p className="text-center text-gray-500 py-4">Tidak ada data personel untuk ditampilkan.</p>} */}
+                    {/* </div> */}
 
                     {/* AI Analysis */}
-                    {aiAnalysis && !isAnalyzing && (
-                      <div className="bg-white p-6 rounded-lg shadow-md mt-8">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Insight Analisis AI</h3>
-                        <div 
-                          className="prose prose-sm sm:prose lg:prose-lg xl:prose-xl max-w-none" 
-                          dangerouslySetInnerHTML={{ __html: aiAnalysis || "<p>Belum ada analisis AI.</p>" }} 
-                        />
-                      </div>
-                    )}
-                     {isAnalyzing && (
-                        <div className="mt-8 flex items-center justify-center p-6 bg-white rounded-lg shadow-md">
-                            <Loader2 className="w-8 h-8 animate-spin text-blue-600 mr-3" />
-                            <p className="text-lg text-gray-700">Memproses analisis AI, mohon tunggu...</p>
-                        </div>
-                    )}
-                  </>
-                ) : (
-                  <div className="bg-white p-8 rounded-lg shadow-md text-center">
-                    <div className="text-gray-400 mb-4">
-                      <Scatter3D className="w-16 h-16 mx-auto" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Belum Ada Data untuk Analisis Klaster</h3>
-                    <p className="text-gray-600 mb-2">
-                      Pastikan data telah diunggah dan proses K-Means (jika ada error) telah berhasil.
-                    </p>
-                    { kmeansError && <p className="text-red-500 text-sm">Error K-Means: {kmeansError}</p>}
-                    { data.length === 0 && 
-                        <p className="text-gray-600 mt-2">
-                            Silakan unggah data terlebih dahulu.
-                        </p>
-                    }
-                  </div>
-                )}
-              </div>
-            )}
+                    {/* {aiAnalysis && !isAnalyzing && ( */}
+                      {/* <div className="bg-white p-6 rounded-lg shadow-md mt-8"> */}
+                        {/* <h3 className="text-lg font-semibold text-gray-900 mb-4">Insight Analisis AI</h3> */}
+                        {/* <div  */}
+                          {/* className="prose prose-sm sm:prose lg:prose-lg xl:prose-xl max-w-none"  */}
+                          {/* dangerouslySetInnerHTML={{ __html: aiAnalysis || "<p>Belum ada analisis AI.</p>" }}  */}
+                        {/* /> */}
+                      {/* </div> */}
+                    {/* )} */}
+                     {/* {isAnalyzing && ( */}
+                        {/* <div className="mt-8 flex items-center justify-center p-6 bg-white rounded-lg shadow-md"> */}
+                            {/* <Loader2 className="w-8 h-8 animate-spin text-blue-600 mr-3" /> */}
+                            {/* <p className="text-lg text-gray-700">Memproses analisis AI, mohon tunggu...</p> */}
+                        {/* </div> */}
+                    {/* )} */}
+                  {/* </> */}
+                {/* ) : ( */}
+                  {/* <div className="bg-white p-8 rounded-lg shadow-md text-center"> */}
+                    {/* <div className="text-gray-400 mb-4"> */}
+                      {/* <Scatter3D className="w-16 h-16 mx-auto" /> */}
+                    {/* </div> */}
+                    {/* <h3 className="text-lg font-semibold text-gray-900 mb-2">Belum Ada Data untuk Analisis Klaster</h3> */}
+                    {/* <p className="text-gray-600 mb-2"> */}
+                      {/* Pastikan data telah diunggah dan proses K-Means (jika ada error) telah berhasil. */}
+                    {/* </p> */}
+                    {/* { kmeansError && <p className="text-red-500 text-sm">Error K-Means: {kmeansError}</p>} */}
+                    {/* { data.length === 0 &&  */}
+                        {/* <p className="text-gray-600 mt-2"> */}
+                            {/* Silakan unggah data terlebih dahulu. */}
+                        {/* </p> */}
+                    {/* } */}
+                  {/* </div> */}
+                {/* )} */}
+              {/* </div> */}
+            {/* )} */}
 
-            {currentPage === "input" && (
-              <div>
-                <DataInput data={data} onDataChange={setData} onStatusChange={setSheetsStatus} />
-              </div>
-            )}
-          </main>
+            {/* {currentPage === "input" && ( */}
+              {/* <div> */}
+                {/* <DataInput data={data} onDataChange={setData} onStatusChange={setSheetsStatus} /> */}
+              {/* </div> */}
+            {/* )} */}
+          {/* </main> */}
 
           {/* Hidden file inputs */}
-          <input 
-            ref={fileInputRef} 
-            type="file" 
-            accept=".csv, .xls, .xlsx, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" 
-            onChange={handleFileUpload} 
-            className="hidden" 
-          />
-          <input 
-            ref={fileReplaceInputRef} 
-            type="file" 
-            accept=".csv, .xls, .xlsx, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" 
-            onChange={handleFileReplace} 
-            className="hidden" 
-          />
-        </SidebarInset>
-      </div>
-    </SidebarProvider>
+          {/* <input  */}
+            {/* ref={fileInputRef}  */}
+            {/* type="file"  */}
+            {/* accept=".csv, .xls, .xlsx, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"  */}
+            {/* onChange={handleFileUpload}  */}
+            {/* className="hidden"  */}
+          {/* /> */}
+          {/* <input  */}
+            {/* ref={fileReplaceInputRef}  */}
+            {/* type="file"  */}
+            {/* accept=".csv, .xls, .xlsx, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"  */}
+            {/* onChange={handleFileReplace}  */}
+            {/* className="hidden"  */}
+          {/* /> */}
+        {/* </SidebarInset> */}
+      {/* </div> */}
+    {/* </SidebarProvider> */}
+    </>
   )
 }
