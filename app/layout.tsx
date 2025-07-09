@@ -1,7 +1,7 @@
 import type React from "react"
 // We are not importing Metadata or Viewport types for this minimal test
 // to reduce potential points of failure.
-import "./globals.css"
+import "./globals.css" 
 
 // Minimal metadata for testing
 export const metadata = {
