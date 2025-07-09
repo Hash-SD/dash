@@ -1,24 +1,18 @@
 import type { Metadata } from "next"
-import Dashboard from "../dashboard"
+// import Dashboard from "../dashboard" // Ensure Dashboard is not imported
 
 export const metadata: Metadata = {
-  title: "Dashboard TIK Polda - Beranda",
-  description:
-    "Halaman utama Dashboard TIK Polda untuk manajemen data kepolisian daerah. Akses fitur input data, analisis statistik, dan laporan terintegrasi.",
-  openGraph: {
-    title: "Dashboard TIK Polda - Beranda",
-    description:
-      "Halaman utama Dashboard TIK Polda untuk manajemen data kepolisian daerah. Akses fitur input data, analisis statistik, dan laporan terintegrasi.",
-    url: "https://dashboard-tik-polda.vercel.app/",
-    images: ["/placeholder-logo.png"],
-  },
+  title: "Test Page - Vercel Diagnosis",
+  description: "Simplified test page for diagnosing Vercel white screen issue.",
 }
 
 export default function HomePage() {
   return (
-    <main role="main" aria-label="Dashboard TIK Polda">
-      <h1 className="sr-only">Dashboard TIK Polda - Sistem Manajemen Data Kepolisian</h1>
-      <Dashboard />
+    <main role="main" aria-label="Test Page Content">
+      <div style={{ padding: "20px", backgroundColor: "lightyellow", color: "black", fontSize: "20px", border: "2px solid orange" }}>
+        <p>Static Test Content from app/page.tsx</p>
+        <p>If you see this, app/page.tsx itself is rendering inside the layout.</p>
+      </div>
     </main>
   )
 }
