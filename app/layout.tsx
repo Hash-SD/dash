@@ -7,6 +7,7 @@ import "./globals.css"
 export const metadata = {
   title: "Minimal Layout Test - Vercel Diag",
   description: "Minimal layout to diagnose Vercel white screen.",
+    generator: 'v0.dev'
 };
 
 // Viewport export is temporarily removed for this test.
