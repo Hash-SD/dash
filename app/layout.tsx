@@ -1,8 +1,9 @@
 import type React from "react"
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next" // Added Viewport
 import "./globals.css"
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://dashboard-tik-polda.vercel.app"), // Added metadataBase
   title: "Dashboard TIK Polda - Sistem Manajemen Data Kepolisian",
   description:
     "Dashboard TIK Polda adalah sistem manajemen data terintegrasi untuk kepolisian daerah. Kelola data personel, analisis statistik, dan laporan dengan mudah dan efisien.",
@@ -71,17 +72,8 @@ export const metadata: Metadata = {
   generator: "Next.js",
   applicationName: "Dashboard TIK Polda",
   referrer: "origin-when-cross-origin",
-  colorScheme: "light dark",
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#000000" },
-  ],
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-  },
+  // colorScheme and themeColor moved to viewport export
+  // viewport moved to viewport export
   verification: {
     google: "your-google-verification-code",
     yandex: "your-yandex-verification-code",
@@ -93,6 +85,18 @@ export const metadata: Metadata = {
       "en-US": "https://dashboard-tik-polda.vercel.app/en",
     },
   },
+}
+
+export const viewport: Viewport = { // Added viewport export
+  colorScheme: "light dark",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#000000" },
+  ],
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 }
 
 export default function RootLayout({
@@ -114,7 +118,8 @@ export default function RootLayout({
         <meta name="application-name" content="Dashboard TIK Polda" />
         <meta name="msapplication-TileColor" content="#2563eb" /> {/* You might want to update this color if the new logo has a different dominant color */}
         <meta name="msapplication-TileImage" content="https://pbj.divtik.polri.go.id/media/logos/logo-div-tik.png" />
-        <meta name="theme-color" content="#2563eb" /> {/* You might want to update this color */}
+        {/* theme-color here might be redundant if viewport export handles it, but keeping for broader compatibility if needed */}
+        {/* <meta name="theme-color" content="#2563eb" />  */}
         <link rel="canonical" href="https://dashboard-tik-polda.vercel.app" />
       </head>
       <body>
