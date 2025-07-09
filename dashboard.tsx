@@ -925,7 +925,7 @@ export default function DashboardTIKPolda() {
           <SidebarHeader>
             <div className="flex items-center space-x-3 p-4">
               <img
-                src="https://pbj.divtik.polri.go.id/media/logos/logo-div-tik.png" // Updated sidebar logo
+                src="https://github.com/Hash-SD/dash/blob/main/tik.png?raw=true" // Updated sidebar logo
                 alt="TIK Polda Logo"
                 className="h-10 w-10 rounded-full object-contain" // Changed to object-contain for better aspect ratio handling
               />
