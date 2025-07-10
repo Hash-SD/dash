@@ -1,11 +1,5 @@
 import type { Metadata } from "next"
-import dynamic from "next/dynamic"
 import DashboardClient from "./dashboard-client" // Import the new client component
-
-const Dashboard = dynamic(() => import("../dashboard"), {
-  ssr: false,
-  loading: () => <p>Loading...</p>
-})
 
 export const metadata: Metadata = {
   title: "Dashboard TIK Polda - Beranda",
@@ -16,15 +10,17 @@ export const metadata: Metadata = {
     description:
       "Halaman utama Dashboard TIK Polda untuk manajemen data kepolisian daerah. Akses fitur input data, analisis statistik, dan laporan terintegrasi.",
     url: "https://dashboard-tik-polda.vercel.app/",
-    images: ["/placeholder-logo.png"],
+    images: ["/placeholder-logo.png"], 
   },
 }
 
 export default function HomePage() {
   return (
     <main role="main" aria-label="Dashboard TIK Polda">
-      <h1 className="sr-only">Dashboard TIK Polda - Sistem Manajemen Data Kepolisian</h1>
-      <Dashboard />
+      <h1 className="sr-only">
+        Dashboard TIK Polda - Sistem Manajemen Data Kepolisian
+      </h1>
+      <DashboardClient />
     </main>
   )
 }
