@@ -1,5 +1,10 @@
 import type { Metadata } from "next"
-import Dashboard from "../dashboard"
+import dynamic from "next/dynamic"
+
+const Dashboard = dynamic(() => import("../dashboard"), {
+  ssr: false,
+  loading: () => <p>Loading...</p>
+})
 
 export const metadata: Metadata = {
   title: "Dashboard TIK Polda - Beranda",
