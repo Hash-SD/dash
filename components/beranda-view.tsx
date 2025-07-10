@@ -41,7 +41,7 @@ export default function BerandaView({ data }: BerandaViewProps) {
       setSelectedDate(uniqueDates[0]);
     }
   }, [uniqueDates, selectedDate]);
-  
+
   const filteredData = useMemo(() => {
     if (!selectedDate) return data;
     return data.filter(record => record["Tanggal Absensi"] === selectedDate);
@@ -69,7 +69,7 @@ export default function BerandaView({ data }: BerandaViewProps) {
         <StatCard icon={Calendar} label="Tingkat Hadir" value={kpis.hadirRate} />
         <StatCard icon={TrendingUp} label="Total Terlambat" value={kpis.terlambat} />
       </div>
-      
+
       <div className="bg-white p-4 rounded-lg shadow-sm">
         <label htmlFor="dateFilter" className="font-medium mr-3">Filter Tanggal:</label>
         <select id="dateFilter" value={selectedDate} onChange={e => setSelectedDate(e.target.value)} className="border-gray-300 rounded-md">

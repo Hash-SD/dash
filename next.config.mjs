@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true, // Add this line
+  reactStrictMode: true, // Baris ini membantu memastikan build yang bersih
   eslint: {
     ignoreDuringBuilds: true,
   },
