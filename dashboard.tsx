@@ -46,7 +46,7 @@ export default function DashboardTIKPolda() {
       const response = await fetch("/api/sheets");
       if (!response.ok) throw new Error("Gagal mengambil data dari server.");
       const result = await response.json();
-      
+
       if (result.data && result.data.length > 0) {
         setData(result.data);
         setFileName("Google Sheets");
@@ -60,12 +60,12 @@ export default function DashboardTIKPolda() {
       setIsLoading(false);
     }
   }, []);
-  
+
   useEffect(() => { loadDataFromSheets(); }, [loadDataFromSheets]);
 
   const PageContent = () => {
-    if (isLoading) {
-      return <div className="flex justify-center items-center h-full"><Loader2 className="w-12 h-12 animate-spin text-blue-600"/></div>
+    if (isLoading && data.length === 0) {
+      return <div className="flex justify-center items-center h-full"><Loader2 className="w-12 h-12 animate-spin text-blue-600"/></div>;
     }
     if (data.length === 0) {
        return <div className="text-center p-8 text-gray-500">Data tidak ditemukan. Silakan unggah data untuk memulai.</div>;
