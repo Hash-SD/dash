@@ -1,12 +1,10 @@
 "use client";
 
-// VERIFIED: All necessary React Hooks are imported.
 import React, { useMemo, useState, useEffect } from 'react';
 import { PieChart, Pie, Cell, BarChart, Bar, ResponsiveContainer, Tooltip, Legend, CartesianGrid, XAxis, YAxis } from 'recharts';
 import { Users, Calendar, TrendingUp, FileText } from 'lucide-react';
 import InteractiveMap from "@/components/ui/InteractiveMap";
 
-// Define component-specific types
 interface AttendanceRecord {
   NRP: string;
   Nama: string;
@@ -38,7 +36,6 @@ export default function BerandaView({ data }: BerandaViewProps) {
   const uniqueDates = useMemo(() => [...new Set(data.map(d => d["Tanggal Absensi"]).filter(Boolean))], [data]);
   const [selectedDate, setSelectedDate] = useState("");
 
-  // This useEffect ensures a default date is selected upon loading
   useEffect(() => {
     if (uniqueDates.length > 0 && !selectedDate) {
       setSelectedDate(uniqueDates[0]);
@@ -64,15 +61,6 @@ export default function BerandaView({ data }: BerandaViewProps) {
       { name: "Izin", value: kpis.izin },
   ].filter(item => item.value > 0), [kpis]);
 
-  const unitChartData = useMemo(() => {
-    const counts = filteredData.reduce((acc, rec) => {
-      const unit = rec.Unit || "Unknown";
-      acc[unit] = (acc[unit] || 0) + 1;
-      return acc;
-    }, {} as {[key: string]: number});
-    return Object.entries(counts).map(([unit, count]) => ({ unit, count }));
-  }, [filteredData]);
-
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -94,31 +82,17 @@ export default function BerandaView({ data }: BerandaViewProps) {
         <InteractiveMap records={filteredData} selectedDate={selectedDate} />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-lg font-semibold mb-4">Distribusi Status Kehadiran</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie data={statusChartData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label>
-                {statusChartData.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
-              </Pie>
-              <Tooltip />
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-lg font-semibold mb-4">Kehadiran per Unit</h3>
-           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={unitChartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="unit" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="count" fill="#8884d8" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+      <div className="bg-white p-6 rounded-lg shadow-md">
+        <h3 className="text-lg font-semibold mb-4">Distribusi Status Kehadiran</h3>
+        <ResponsiveContainer width="100%" height={300}>
+          <PieChart>
+            <Pie data={statusChartData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label>
+              {statusChartData.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
+            </Pie>
+            <Tooltip />
+            <Legend />
+          </PieChart>
+        </ResponsiveContainer>
       </div>
     </div>
   );
