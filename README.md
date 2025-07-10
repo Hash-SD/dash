@@ -4,6 +4,7 @@
 
 [![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/tampancs-projects/v0-dashboard-tik-polda)
 [![Built with v0](https://img.shields.io/badge/Built%20with-v0.dev-black?style=for-the-badge)](https://v0.dev/chat/projects/GWfMtgth8zZ)
+![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/Hash-SD/dash?utm_source=oss&utm_medium=github&utm_campaign=Hash-SD%2Fdash&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
 
 ## Overview
 
