@@ -1,8 +1,36 @@
 "use client"
 
-import React from 'react';
-import { ChevronLeft } from 'lucide-react';
-import { SidebarProvider, useSidebar } from './SidebarContext';
+import React, { createContext, useState, useContext } from 'react';
+
+type SidebarContextType = {
+  isOpen: boolean;
+  setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  toggleSidebar: () => void;
+};
+
+const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
+
+export function SidebarProvider({ children }: { children: React.ReactNode }) {
+  const [isOpen, setIsOpen] = useState(true);
+
+  const toggleSidebar = () => {
+    setIsOpen(prev => !prev);
+  };
+
+  return (
+    <SidebarContext.Provider value={{ isOpen, setIsOpen, toggleSidebar }}>
+      {children}
+    </SidebarContext.Provider>
+  );
+}
+
+export function useSidebar() {
+  const context = useContext(SidebarContext);
+  if (context === undefined) {
+    throw new Error('useSidebar must be used within a SidebarProvider');
+  }
+  return context;
+}
 
 export function Sidebar({ children }: { children: React.ReactNode }) {
   const { isOpen } = useSidebar();
@@ -86,10 +114,7 @@ export function SidebarTrigger() {
       onClick={toggleSidebar}
       className="p-2 rounded-md text-gray-500 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
     >
-      <ChevronLeft className="h-5 w-5" />
       <span className="sr-only">Toggle sidebar</span>
     </button>
   );
 }
-
-export { SidebarProvider } from './SidebarContext';
