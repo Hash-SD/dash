@@ -1,18 +1,12 @@
-// Lokasi: components/beranda-view.tsx
-
 "use client";
 
-import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { Upload, BarChart3, Users, RefreshCw, Loader2, Trash2 } from 'lucide-react';
-import ClusterAnalysisView from '@/components/cluster-analysis-view';
-import BerandaView from '@/components/beranda-view';
-import { 
-  Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, 
-  SidebarGroupLabel, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuButton, 
-  SidebarMenuItem, SidebarProvider, SidebarTrigger 
-} from "@/components/ui/sidebar";
+// This import statement is now corrected to include useEffect
+import React, { useMemo, useState, useEffect } from 'react';
+import { PieChart, Pie, Cell, BarChart, Bar, ResponsiveContainer, Tooltip, Legend, CartesianGrid, XAxis, YAxis } from 'recharts';
+import { Users, Calendar, TrendingUp, FileText } from 'lucide-react';
+import InteractiveMap from "@/components/ui/InteractiveMap";
 
-// Tipe data yang dibutuhkan oleh komponen ini
+// Define the types needed by this component
 interface AttendanceRecord {
   NRP: string;
   Nama: string;
@@ -30,26 +24,7 @@ interface BerandaViewProps {
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
 
-// Komponen DataStats sederhana untuk di dalam Beranda
-const DataStats = ({ data }: { data: AttendanceRecord[] }) => {
-  const stats = useMemo(() => ({
-    totalRecords: data.length,
-    uniquePersonnel: new Set(data.map(r => r.NRP)).size,
-    uniqueDates: new Set(data.map(r => r["Tanggal Absensi"])).size,
-    uniqueUnits: new Set(data.map(r => r.Unit)).size,
-  }), [data]);
-
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-      <StatCard icon={FileText} label="Total Records" value={stats.totalRecords} />
-      <StatCard icon={Users} label="Personel" value={stats.uniquePersonnel} />
-      <StatCard icon={Calendar} label="Hari Kerja" value={stats.uniqueDates} />
-      <StatCard icon={TrendingUp} label="Unit Kerja" value={stats.uniqueUnits} />
-    </div>
-  );
-};
-
-const StatCard = ({ icon: Icon, label, value }: { icon: React.ElementType, label: string, value: number }) => (
+const StatCard = ({ icon: Icon, label, value }: { icon: React.ElementType, label: string, value: number | string }) => (
   <div className="bg-white p-4 rounded-lg shadow-sm border flex items-center">
     <Icon className="w-8 h-8 text-blue-600" />
     <div className="ml-4">
@@ -59,11 +34,12 @@ const StatCard = ({ icon: Icon, label, value }: { icon: React.ElementType, label
   </div>
 );
 
-// Komponen utama untuk tampilan Beranda
+// Main component for the Beranda view
 export default function BerandaView({ data }: BerandaViewProps) {
   const uniqueDates = useMemo(() => [...new Set(data.map(d => d["Tanggal Absensi"]).filter(Boolean))], [data]);
   const [selectedDate, setSelectedDate] = useState(uniqueDates[0] || "");
 
+  // This useEffect ensures a date is selected when the component loads
   useEffect(() => {
     if (uniqueDates.length > 0 && !selectedDate) {
       setSelectedDate(uniqueDates[0]);
@@ -80,7 +56,7 @@ export default function BerandaView({ data }: BerandaViewProps) {
       const hadir = filteredData.filter(r => r.Status === "Hadir" || r.Status === "Tepat Waktu").length;
       const terlambat = filteredData.filter(r => r.Status === "Terlambat").length;
       const izin = filteredData.filter(r => r.Status === "Izin").length;
-      return { total, hadir, terlambat, izin, hadirRate: total > 0 ? ((hadir / total) * 100).toFixed(1) : "0" };
+      return { total, hadir, terlambat, izin, hadirRate: total > 0 ? `${((hadir / total) * 100).toFixed(1)}%` : "0%" };
   }, [filteredData]);
 
   const statusChartData = useMemo(() => [
@@ -91,7 +67,8 @@ export default function BerandaView({ data }: BerandaViewProps) {
 
   const unitChartData = useMemo(() => {
     const counts = filteredData.reduce((acc, rec) => {
-      acc[rec.Unit] = (acc[rec.Unit] || 0) + 1;
+      const unit = rec.Unit || "Unknown";
+      acc[unit] = (acc[unit] || 0) + 1;
       return acc;
     }, {} as {[key: string]: number});
     return Object.entries(counts).map(([unit, count]) => ({ unit, count }));
@@ -99,7 +76,12 @@ export default function BerandaView({ data }: BerandaViewProps) {
 
   return (
     <div className="space-y-6">
-      <DataStats data={data} />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard icon={FileText} label="Total Records" value={data.length} />
+        <StatCard icon={Users} label="Personel Hadir" value={kpis.hadir} />
+        <StatCard icon={Calendar} label="Tingkat Hadir" value={kpis.hadirRate} />
+        <StatCard icon={TrendingUp} label="Total Terlambat" value={kpis.terlambat} />
+      </div>
       
       <div className="bg-white p-4 rounded-lg shadow-sm">
         <label htmlFor="dateFilter" className="font-medium mr-3">Filter Tanggal:</label>
