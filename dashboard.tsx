@@ -495,131 +495,101 @@ export default function DashboardTIKPolda() {
     }, 250)
   }, [])
 
-  // Calculate features for clustering
-  const calculateFeatures = useCallback((records: AttendanceRecord[]) => {
-    // Filter only "Masuk" records for analysis
-    const masukRecords = records.filter((record) => record["Jenis Absensi"] === "Masuk")
+const calculateFeatures = useCallback((records: AttendanceRecord[]) => {
+    const masukRecords = records.filter(record => record["Jenis Absensi"] === "Masuk");
+    if (masukRecords.length === 0) return [];
 
-    if (masukRecords.length === 0) return []
+    const personelStats: { [key: string]: { total_hadir: number; total_terlambat: number; total_izin: number; total_masuk: number; waktu_masuk: number[]; akurasi_lokasi: number[]; ip_addresses: Set<string>; perangkat_ids: Set<string>; } } = {};
 
-    const personelStats: {
-      [key: string]: {
-        total_hadir: number
-        total_terlambat: number
-        total_izin: number
-        total_masuk: number
-        waktu_masuk: number[]
-        akurasi_lokasi: number[]
-        ip_addresses: Set<string>
-        perangkat_ids: Set<string>
-      }
-    } = {}
-
-    // Aggregate data per NRP
-    masukRecords.forEach((record) => {
-      const nrp = record.NRP || ""
-      if (!personelStats[nrp]) {
-        personelStats[nrp] = {
-          total_hadir: 0,
-          total_terlambat: 0,
-          total_izin: 0,
-          total_masuk: 0,
-          waktu_masuk: [],
-          akurasi_lokasi: [],
-          ip_addresses: new Set(),
-          perangkat_ids: new Set(),
+    masukRecords.forEach(record => {
+        const nrp = record.NRP || "";
+        if (!personelStats[nrp]) {
+            personelStats[nrp] = { total_hadir: 0, total_terlambat: 0, total_izin: 0, total_masuk: 0, waktu_masuk: [], akurasi_lokasi: [], ip_addresses: new Set(), perangkat_ids: new Set() };
         }
-      }
 
-      const stats = personelStats[nrp]
-      stats.total_masuk += 1
+        const stats = personelStats[nrp];
+        stats.total_masuk += 1;
 
-      // Count status
-      if (record.Status === "Tepat Waktu") stats.total_hadir += 1
-      else if (record.Status === "Terlambat") stats.total_terlambat += 1
-      else if (record.Status === "Izin") stats.total_izin += 1
+        if (record.Status === "Hadir" || record.Status === "Tepat Waktu") stats.total_hadir += 1;
+        else if (record.Status === "Terlambat") stats.total_terlambat += 1;
+        else if (record.Status === "Izin") stats.total_izin += 1;
 
-      // Convert time to minutes from 00:00
-      const waktuAbsensi = record["Waktu Absensi"];
-      if (waktuAbsensi && typeof waktuAbsensi === 'string' && waktuAbsensi.includes(':')) {
-        const timeParts = waktuAbsensi.split(":");
-        const hours = parseInt(timeParts[0], 10);
-        const minutesPart = parseInt(timeParts[1], 10);
-        if (!isNaN(hours) && !isNaN(minutesPart)) {
-          stats.waktu_masuk.push(hours * 60 + minutesPart);
+        const waktuAbsensi = record["Waktu Absensi"];
+        if (waktuAbsensi && typeof waktuAbsensi === 'string' && waktuAbsensi.includes(':')) {
+            const timeParts = waktuAbsensi.split(":");
+            const hours = parseInt(timeParts[0], 10);
+            const minutesPart = parseInt(timeParts[1], 10); // Assuming format HH:MM
+            if (!isNaN(hours) && !isNaN(minutesPart)) {
+                stats.waktu_masuk.push(hours * 60 + minutesPart);
+            }
         }
-      }
 
-      // Collect location accuracy
-      const akurasiValue = record["Akurasi Lokasi"];
-      if (akurasiValue) {
-          const akurasi = parseFloat(String(akurasiValue));
-          if (!isNaN(akurasi) && akurasi > 0) {
-              stats.akurasi_lokasi.push(akurasi);
-          }
-      }
+        const akurasiValue = record["Akurasi Lokasi"];
+        if (akurasiValue) {
+            // Bersihkan nilai akurasi: hapus " M" di akhir (case-insensitive) dan ganti koma dengan titik
+            const akurasiStr = String(akurasiValue).replace(/\s*M$/i, '').replace(/,/g, '.');
+            const akurasi = parseFloat(akurasiStr);
+            if (!isNaN(akurasi) && akurasi > 0) {
+                stats.akurasi_lokasi.push(akurasi);
+            }
+        }
 
-      // Collect unique IPs and devices
-      if (record["Alamat IP"]) stats.ip_addresses.add(record["Alamat IP"])
-      if (record["ID Perangkat"]) stats.perangkat_ids.add(record["ID Perangkat"])
-    })
+        if (record["Alamat IP"]) stats.ip_addresses.add(record["Alamat IP"]);
+        if (record["ID Perangkat"]) stats.perangkat_ids.add(record["ID Perangkat"]);
+    });
 
-    // Calculate final features
     const features = Object.entries(personelStats).map(([nrp, stats]) => {
-      const record = masukRecords.find((r) => r.NRP === nrp)!
+        const record = masukRecords.find(r => r.NRP === nrp)!;
+        const avgArrivalTime = stats.waktu_masuk.length > 0 ? stats.waktu_masuk.reduce((a, b) => a + b, 0) / stats.waktu_masuk.length : 480; // Default 08:00
+        const tardinessRate = stats.total_masuk > 0 ? (stats.total_terlambat / stats.total_masuk) * 100 : 0;
 
-      return {
-        record,
-        nrp,
-        total_hadir: stats.total_hadir,
-        total_terlambat: stats.total_terlambat,
-        total_izin: stats.total_izin,
-        total_masuk: stats.total_masuk,
-        rata2_jam_masuk:
-          stats.waktu_masuk.length > 0 ? stats.waktu_masuk.reduce((a, b) => a + b, 0) / stats.waktu_masuk.length : 480,
-        rata2_akurasi_lokasi:
-          stats.akurasi_lokasi.length > 0
-            ? stats.akurasi_lokasi.reduce((a, b) => a + b, 0) / stats.akurasi_lokasi.length
-            : 10,
-        jumlah_ip_berbeda: stats.ip_addresses.size,
-        jumlah_perangkat_berbeda: stats.perangkat_ids.size,
-      }
-    })
+        // Hitung rata-rata akurasi lokasi dari array akurasi_lokasi
+        const avgAccuracy = stats.akurasi_lokasi.length > 0 ? stats.akurasi_lokasi.reduce((a, b) => a + b, 0) / stats.akurasi_lokasi.length : 10; // Default 10 jika tidak ada data
 
-    // Normalize features for clustering
-    if (features.length === 0) return []
+        // Fitur yang akan dikembalikan, termasuk yang untuk visualisasi dan yang untuk clustering
+        const featureSet = {
+            record,
+            nrp,
+            total_hadir: stats.total_hadir,
+            total_terlambat: stats.total_terlambat,
+            total_izin: stats.total_izin,
+            total_masuk: stats.total_masuk,
+            avgArrivalTime: !isNaN(avgArrivalTime) ? avgArrivalTime : 480,
+            tardinessRate: !isNaN(tardinessRate) ? tardinessRate : 0,
+            // Menyimpan juga rata2_akurasi_lokasi, jumlah_ip_berbeda, dan jumlah_perangkat_berbeda
+            // untuk kemungkinan penggunaan di AI analysis atau tempat lain, meski tidak dinormalisasi di sini.
+            rata2_akurasi_lokasi: !isNaN(avgAccuracy) ? avgAccuracy : 10,
+            jumlah_ip_berbeda: stats.ip_addresses.size,
+            jumlah_perangkat_berbeda: stats.perangkat_ids.size,
+            // Fitur mentah untuk clustering (tidak dinormalisasi di sini, normalisasi terjadi di backend atau sebelum dikirim)
+            features: [
+                stats.total_hadir,
+                stats.total_terlambat,
+                !isNaN(avgAccuracy) ? avgAccuracy : 10, // avgAccuracy untuk clustering
+                stats.ip_addresses.size,                // jumlah IP unik
+                stats.perangkat_ids.size                // jumlah perangkat unik
+            ].map(val => !isNaN(val) ? val : 0) // Pastikan semua fitur adalah angka, fallback ke 0 jika NaN
+        };
+        return featureSet;
+    });
 
-    const normalizeFeature = (values: number[]) => {
-      const mean = values.reduce((a, b) => a + b, 0) / values.length
-      const std = Math.sqrt(values.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / values.length)
-      return values.map((v) => (std > 0 ? (v - mean) / std : 0))
-    }
+    // Jika Anda memutuskan untuk melakukan normalisasi di frontend sebelum mengirim ke backend:
+    // const normalizeFeature = (values: number[]) => {
+    //   if (values.length === 0) return [];
+    //   const mean = values.reduce((a, b) => a + b, 0) / values.length;
+    //   const std = Math.sqrt(values.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / values.length);
+    //   return values.map((v) => (std > 0 ? (v - mean) / std : 0));
+    // };
 
-    const totalHadirNorm = normalizeFeature(features.map((f) => f.total_hadir))
-    const totalTerlambatNorm = normalizeFeature(features.map((f) => f.total_terlambat))
-    const totalIzinNorm = normalizeFeature(features.map((f) => f.total_izin))
-    const rata2JamMasukNorm = normalizeFeature(features.map((f) => f.rata2_jam_masuk))
-    const rata2AkurasiNorm = normalizeFeature(features.map((f) => f.rata2_akurasi_lokasi))
-    const jumlahIpNorm = normalizeFeature(features.map((f) => f.jumlah_ip_berbeda))
-    const jumlahPerangkatNorm = normalizeFeature(features.map((f) => f.jumlah_perangkat_berbeda))
+    // features.forEach(f => {
+    //     // Example: if you want to normalize the 'features' array for backend
+    //     // This assumes your backend expects normalized features. If not, send raw as above.
+    //     // const rawClusteringFeatures = [f.total_hadir, f.total_terlambat, f.rata2_akurasi_lokasi, f.jumlah_ip_berbeda, f.jumlah_perangkat_berbeda];
+    //     // f.features = normalizeFeature(rawClusteringFeatures.map(v => !isNaN(v) ? v : 0));
+    // });
 
-    return features.map((f, i) => ({
-      ...f,
-      // Use composite score for clustering visualization
-      avgArrivalTime: f.rata2_jam_masuk,
-      tardinessRate: (f.total_terlambat / f.total_masuk) * 100,
-      // Normalized features for actual clustering
-      features: [
-        totalHadirNorm[i],
-        totalTerlambatNorm[i],
-        totalIzinNorm[i],
-        rata2JamMasukNorm[i],
-        rata2AkurasiNorm[i],
-        jumlahIpNorm[i],
-        jumlahPerangkatNorm[i],
-      ],
-    }))
-  }, [])
+    return features;
+}, []);
 
   // K-Means implementation (REMOVED - will be replaced by backend call)
 
@@ -1720,114 +1690,70 @@ export default function DashboardTIKPolda() {
                         </div>
                     </div>
 
-                    {/* Cluster Visualization (Scatter Plot) */}
-                    <div className="bg-white p-6 rounded-lg shadow-md mb-8">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Visualisasi Pola Klaster (K-Means)</h3>
-                      <ResponsiveContainer width="100%" height={500}>
-                        <ScatterChart>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis
-                            type="number"
-                            dataKey="x"
-                            name="Rata-rata Waktu Kedatangan (menit)"
-                            label={{
-                              value: "Rata-rata Waktu Kedatangan (menit)",
-                              position: "insideBottom",
-                              offset: -10,
-                            }}
-                          />
-                          <YAxis
-                            type="number"
-                            dataKey="y"
-                            name="Tingkat Keterlambatan (%)"
-                            label={{ value: "Tingkat Keterlambatan (%)", angle: -90, position: "insideLeft" }}
-                          />
-                          <Tooltip
-                            cursor={{ strokeDasharray: "3 3" }}
-                            content={({ active, payload }) => {
-                              if (active && payload && payload.length > 0 && payload[0] && payload[0].payload) {
-                                const data = payload[0].payload as ClusterPoint;
-                                // Ensure data and data.record are valid objects before accessing properties
-                                try {
-                                  if (data && typeof data === 'object' && data.record && typeof data.record === 'object') {
-                                    const clusterName = (Array.isArray(clusterNames) && typeof data.cluster === 'number' && data.cluster >= 0 && data.cluster < clusterNames.length)
-                                      ? clusterNames[data.cluster]
-                                      : `Klaster ${data.cluster || 0}`;
-                                    
-                                    // Safely access properties with defaults
-                                    const nama = String(data.record.Nama || 'N/A');
-                                    const unit = String(data.record.Unit || 'N/A');
-                                    const avgTime = typeof data.x === 'number' ? `${Math.floor(data.x / 60)}:${String(Math.floor(data.x % 60)).padStart(2, "0")}` : 'N/A';
-                                    const tardiness = typeof data.y === 'number' ? `${data.y.toFixed(1)}%` : 'N/A';
+<div className="bg-white p-6 rounded-lg shadow-md mb-8">
+  <h3 className="text-lg font-semibold text-gray-900 mb-4">Visualisasi Pola Klaster (K-Means)</h3>
 
-                                    return (
-                                      <div className="bg-white p-3 border border-gray-300 rounded-lg shadow-lg">
-                                        <p className="font-semibold">{nama}</p>
-                                        <p>Unit: {unit}</p>
-                                        <p>Klaster: {clusterName}</p>
-                                        <p>Avg Kedatangan: {avgTime}</p>
-                                        <p>Tingkat Terlambat: {tardiness}</p>
-                                      </div>
-                                    );
-                                  }
-                                } catch (error) {
-                                  console.warn("Error rendering tooltip:", error);
-                                  return (
-                                    <div className="bg-white p-3 border border-gray-300 rounded-lg shadow-lg">
-                                      <p className="text-gray-500">Data tidak tersedia</p>
-                                    </div>
-                                  );
-                                }
-                              }
-                              return null;
-                            }}
-                          />
-                          <Legend />
-                          {/* Render Scatter points based on `clusters` which now uses backend labels */}
-                          {Array.from({ length: kValue }, (_, i) => {
-                            const pointsInCluster = clusters.filter(p => p.cluster === i && (selectedCluster === null || selectedCluster === i));
-                            if (pointsInCluster.length === 0 && !(selectedCluster === null || selectedCluster === i) ) return null; // Don't render if no points and not explicitly selected
-                            
-                            return (
-                              <Scatter
-                                key={`cluster-scatter-${i}`}
-                                name={clusterNames[i] || `Klaster ${i + 1}`}
-                                data={pointsInCluster}
-                                fill={COLORS[i % COLORS.length]}
-                                onClick={() => setSelectedCluster(selectedCluster === i ? null : i)}
-                                style={{ cursor: "pointer" }}
-                              />
-                            );
-                          })}
-                        </ScatterChart>
-                      </ResponsiveContainer>
+  {/* ---- AWAL DARI BLOK PELINDUNG ---- */}
+  {(isKmeansLoading || clusters.length === 0) ? (
+    <div className="flex items-center justify-center h-[500px] text-gray-500">
+      {isKmeansLoading ? <Loader2 className="w-8 h-8 animate-spin" /> : <p>Data tidak cukup untuk visualisasi.</p>}
+    </div>
+  ) : (
+    <ResponsiveContainer width="100%" height={500}>
+      <ScatterChart>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis
+          type="number"
+          dataKey="x"
+          name="Rata-rata Waktu Kedatangan (menit)"
+          domain={['dataMin - 15', 'dataMax + 15']}
+          tickFormatter={(time: number) => `${Math.floor(time / 60)}:${String(Math.floor(time % 60)).padStart(2, '0')}`}
+        />
+        <YAxis
+          type="number"
+          dataKey="y"
+          name="Tingkat Keterlambatan (%)"
+          unit="%"
+          domain={[0, 'dataMax + 10']}
+        />
+        <Tooltip
+          cursor={{ strokeDasharray: "3 3" }}
+          content={({ active, payload }) => {
+            if (active && payload && payload.length) {
+              const data = payload[0].payload as ClusterPoint;
+              if (!data || !data.record) return null;
 
-                      {/* Cluster Legend */}
-                      <div className="mt-4 flex flex-wrap gap-4">
-                        {Array.from({ length: kValue }, (_, i) => {
-                          // Count members directly from `clusterLabels` and `personnelFeatures`
-                          // to ensure it reflects the backend output accurately.
-                          const clusterMemberCount = clusterLabels.filter(label => label === i).length;
-                          return (
-                            <button
-                              key={`legend-btn-${i}`}
-                              onClick={() => setSelectedCluster(selectedCluster === i ? null : i)}
-                              disabled={isKmeansLoading}
-                              className={`flex items-center space-x-2 px-3 py-2 rounded-lg border transition-colors ${
-                                selectedCluster === i
-                                  ? "bg-gray-200 border-gray-500 ring-2 ring-gray-500"
-                                  : "border-gray-300 hover:bg-gray-100"
-                              } ${isKmeansLoading ? "opacity-50 cursor-not-allowed" : ""}`}
-                            >
-                              <div className="w-4 h-4 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
-                              <span className="text-sm font-medium">
-                                {clusterNames[i] || `Klaster ${i + 1}`} ({clusterMemberCount})
-                              </span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
+              const clusterName = clusterNames[data.cluster] || `Klaster ${data.cluster + 1}`;
+              const arrivalTime = typeof data.x === 'number' ? `${Math.floor(data.x / 60)}:${String(Math.floor(data.x % 60)).padStart(2, '0')}` : 'N/A';
+              const tardiness = typeof data.y === 'number' ? `${data.y.toFixed(1)}%` : 'N/A';
+
+              return (
+                <div className="bg-white p-3 border border-gray-300 rounded-lg shadow-lg">
+                  <p className="font-semibold">{data.record.Nama || 'N/A'}</p>
+                  <p>Unit: {data.record.Unit || 'N/A'}</p>
+                  <p>Klaster: {clusterName}</p>
+                  <p>Avg Kedatangan: {arrivalTime}</p>
+                  <p>Tingkat Terlambat: {tardiness}</p>
+                </div>
+              );
+            }
+            return null;
+          }}
+        />
+        <Legend />
+        {Array.from({ length: kValue }).map((_, i) => (
+          <Scatter
+            key={`cluster-${i}`}
+            name={clusterNames[i] || `Klaster ${i + 1}`}
+            data={clusters.filter(p => p.cluster === i)}
+            fill={COLORS[i % COLORS.length]}
+          />
+        ))}
+      </ScatterChart>
+    </ResponsiveContainer>
+  )}
+  {/* ---- AKHIR DARI BLOK PELINDUNG ---- */}
+</div>
 
                     {/* Interactive Personnel Table */}
                     <div className="bg-white p-6 rounded-lg shadow-md mt-8">
