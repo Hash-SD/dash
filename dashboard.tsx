@@ -12,6 +12,11 @@ import {
   Line,
   ScatterChart,
   Scatter,
+  RadarChart,
+  Radar,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -1422,7 +1427,6 @@ export default function DashboardTIKPolda() {
                         <div className="bg-white p-6 rounded-lg shadow-md">
                             <h3 className="text-lg font-semibold text-gray-900 mb-4">Karakteristik Rata-rata Klaster</h3>
                             <ResponsiveContainer width="100%" height={300}>
-                                    {/* Correct Radar Implementation */}
                                     {(() => {
                                         const metrics = [
                                             { key: 'avgTotalHadir', name: 'Avg Hadir', max: 0},
