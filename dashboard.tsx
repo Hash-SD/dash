@@ -12,6 +12,11 @@ import {
   Line,
   ScatterChart,
   Scatter,
+  RadarChart,
+  Radar,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -1482,6 +1487,7 @@ export default function DashboardTIKPolda() {
                                             />
                                         );
                                     })}
+                                </RadarChart>
                                     {/* This Radar setup is incorrect for comparing clusters.
                                         The `data` prop of RadarChart should be an array of objects,
                                         where each object represents a point on the angle axis (a metric).
