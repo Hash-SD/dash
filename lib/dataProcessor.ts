@@ -1,9 +1,7 @@
-// This file will contain pure data processing functions.
-// We will move parseFileData and calculateFeatures here.
+// Contains pure data processing functions for attendance records.
 
-// Define AttendanceRecord interface here as it's used by the functions
-// Or import it if it's defined in a shared types file.
-// For now, let's define it here for simplicity if not already externalized.
+// Defines the structure for an attendance record.
+// Consider moving to a shared types file if used across multiple modules.
 export interface AttendanceRecord {
   NRP: string
   Nama: string
@@ -21,11 +19,9 @@ export interface AttendanceRecord {
   Deskripsi: string
 }
 
-// We'll also need the FeatureSet interface for calculateFeatures' return type
-// (atau tipe apa pun yang dikembalikan oleh calculateFeatures)
-// Misalnya, jika calculateFeatures mengembalikan objek dengan struktur tertentu:
+// Defines the structure for the output of the calculateFeatures function.
 export interface ProcessedFeatureSet {
-  record: AttendanceRecord;
+  record: AttendanceRecord; // The original record (or a representative one for a user)
   nrp: string;
   total_hadir: number;
   total_terlambat: number;
@@ -36,11 +32,10 @@ export interface ProcessedFeatureSet {
   rata2_akurasi_lokasi: number;
   jumlah_ip_berbeda: number;
   jumlah_perangkat_berbeda: number;
-  features: number[]; // Array fitur numerik untuk clustering
+  features: number[]; // Numeric features for clustering
 }
 
-
-// parseFileData implementation moved from dashboard.tsx
+// Parses attendance data from a file (XLSX, XLS, or CSV).
 export function parseFileData(file: File): Promise<AttendanceRecord[]> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -57,13 +52,13 @@ export function parseFileData(file: File): Promise<AttendanceRecord[]> {
         let parsedRecords: AttendanceRecord[] = [];
 
         if (fileExtension === 'xlsx' || fileExtension === 'xls') {
-          const XLSX = require('xlsx'); // Lazy load xlsx
+          const XLSX = require('xlsx'); // Lazy load xlsx for these formats
           const workbook = XLSX.read(fileData, { type: 'binary' });
           const sheetName = workbook.SheetNames[0];
           const worksheet = workbook.Sheets[sheetName];
           const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
-          if (jsonData.length < 2) { // At least one header row and one data row
+          if (jsonData.length < 2) { // Expect at least header and one data row
               resolve([]); return;
           }
           const headers = jsonData[0] as string[];
@@ -78,16 +73,15 @@ export function parseFileData(file: File): Promise<AttendanceRecord[]> {
         } else if (fileExtension === 'csv') {
           const textData = fileData as string;
           const lines = textData.trim().split(/\r\n|\n/);
-          if (lines.length < 2) { // At least one header row and one data row
+          if (lines.length < 2) { // Expect at least header and one data row
               resolve([]); return;
           }
 
-          // Auto-detect delimiter (simple version: check common delimiters in header)
+          // Simple delimiter auto-detection (checks common ones in header)
           const headerLine = lines[0];
           let delimiter = '\t'; // Default to tab
           if (headerLine.includes(',')) delimiter = ',';
           else if (headerLine.includes(';')) delimiter = ';';
-          // Could add more robust detection if needed
 
           const headers = headerLine.split(delimiter).map(h => h.trim());
 
@@ -125,17 +119,34 @@ export function parseFileData(file: File): Promise<AttendanceRecord[]> {
   });
 }
 
-// calculateFeatures implementation moved from dashboard.tsx
+// Calculates features for each personnel based on their attendance records.
+// Primarily processes "Masuk" (entry) records.
 export function calculateFeatures(records: AttendanceRecord[]): ProcessedFeatureSet[] {
     const masukRecords = records.filter(record => record["Jenis Absensi"] === "Masuk");
     if (masukRecords.length === 0) return [];
 
-    const personelStats: { [key: string]: { total_hadir: number; total_terlambat: number; total_izin: number; total_masuk: number; waktu_masuk: number[]; akurasi_lokasi: number[]; ip_addresses: Set<string>; perangkat_ids: Set<string>; } } = {};
+    // Aggregate statistics per personnel (NRP)
+    const personelStats: {
+        [key: string]: {
+            total_hadir: number;
+            total_terlambat: number;
+            total_izin: number;
+            total_masuk: number;
+            waktu_masuk: number[]; // Arrival times in minutes from midnight
+            akurasi_lokasi: number[];
+            ip_addresses: Set<string>;
+            perangkat_ids: Set<string>;
+        }
+    } = {};
 
     masukRecords.forEach(record => {
-        const nrp = record.NRP || "";
+        const nrp = record.NRP || "UNKNOWN_NRP"; // Handle potential missing NRP
         if (!personelStats[nrp]) {
-            personelStats[nrp] = { total_hadir: 0, total_terlambat: 0, total_izin: 0, total_masuk: 0, waktu_masuk: [], akurasi_lokasi: [], ip_addresses: new Set(), perangkat_ids: new Set() };
+            personelStats[nrp] = {
+                total_hadir: 0, total_terlambat: 0, total_izin: 0, total_masuk: 0,
+                waktu_masuk: [], akurasi_lokasi: [],
+                ip_addresses: new Set(), perangkat_ids: new Set()
+            };
         }
 
         const stats = personelStats[nrp];
@@ -149,18 +160,18 @@ export function calculateFeatures(records: AttendanceRecord[]): ProcessedFeature
         if (waktuAbsensi && typeof waktuAbsensi === 'string' && waktuAbsensi.includes(':')) {
             const timeParts = waktuAbsensi.split(":");
             const hours = parseInt(timeParts[0], 10);
-            const minutesPart = parseInt(timeParts[1], 10); // Assuming format HH:MM
-            if (!isNaN(hours) && !isNaN(minutesPart)) {
-                stats.waktu_masuk.push(hours * 60 + minutesPart);
+            const minutes = parseInt(timeParts[1], 10); // Assuming HH:MM format
+            if (!isNaN(hours) && !isNaN(minutes)) {
+                stats.waktu_masuk.push(hours * 60 + minutes);
             }
         }
 
         const akurasiValue = record["Akurasi Lokasi"];
         if (akurasiValue) {
-            // Bersihkan nilai akurasi: hapus " M" di akhir (case-insensitive) dan ganti koma dengan titik
+            // Clean accuracy value: remove " M" suffix (case-insensitive) and replace comma with dot
             const akurasiStr = String(akurasiValue).replace(/\s*M$/i, '').replace(/,/g, '.');
             const akurasi = parseFloat(akurasiStr);
-            if (!isNaN(akurasi) && akurasi > 0) {
+            if (!isNaN(akurasi) && akurasi > 0) { // Ensure positive accuracy
                 stats.akurasi_lokasi.push(akurasi);
             }
         }
@@ -169,15 +180,21 @@ export function calculateFeatures(records: AttendanceRecord[]): ProcessedFeature
         if (record["ID Perangkat"]) stats.perangkat_ids.add(record["ID Perangkat"]);
     });
 
+    // Transform aggregated stats into feature sets
     const features = Object.entries(personelStats).map(([nrp, stats]) => {
-        const record = masukRecords.find(r => r.NRP === nrp)!; // Non-null assertion: aman jika nrp berasal dari personelStats yang dibangun dari masukRecords
-        const avgArrivalTime = stats.waktu_masuk.length > 0 ? stats.waktu_masuk.reduce((a, b) => a + b, 0) / stats.waktu_masuk.length : 480; // Default 08:00
-        const tardinessRate = stats.total_masuk > 0 ? (stats.total_terlambat / stats.total_masuk) * 100 : 0;
-
-        const avgAccuracy = stats.akurasi_lokasi.length > 0 ? stats.akurasi_lokasi.reduce((a, b) => a + b, 0) / stats.akurasi_lokasi.length : 10; // Default 10 jika tidak ada data
+        const representativeRecord = masukRecords.find(r => r.NRP === nrp) || masukRecords[0]; // Fallback if NRP was UNKNOWN
+        const avgArrivalTime = stats.waktu_masuk.length > 0
+            ? stats.waktu_masuk.reduce((a, b) => a + b, 0) / stats.waktu_masuk.length
+            : 480; // Default to 08:00 (480 minutes) if no arrival times
+        const tardinessRate = stats.total_masuk > 0
+            ? (stats.total_terlambat / stats.total_masuk) * 100
+            : 0;
+        const avgAccuracy = stats.akurasi_lokasi.length > 0
+            ? stats.akurasi_lokasi.reduce((a, b) => a + b, 0) / stats.akurasi_lokasi.length
+            : 10; // Default to 10m accuracy if no data
 
         const featureSet: ProcessedFeatureSet = {
-            record,
+            record: representativeRecord,
             nrp,
             total_hadir: stats.total_hadir,
             total_terlambat: stats.total_terlambat,

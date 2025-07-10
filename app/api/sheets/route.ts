@@ -1,33 +1,26 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { google } from "googleapis"
 
-// Function to properly format the private key
+// Formats the private key string by removing quotes and converting literal newlines.
 function formatPrivateKey(privateKey: string): string {
   if (!privateKey) {
     throw new Error("Private key is empty or undefined")
   }
 
-  // Remove surrounding quotes if present
   let key = privateKey.trim()
   if ((key.startsWith('"') && key.endsWith('"')) || (key.startsWith("'") && key.endsWith("'"))) {
     key = key.slice(1, -1)
   }
 
-  // Convert literal \n to actual newlines
   key = key.replace(/\\n/g, "\n")
 
-  // Ensure proper formatting
-  if (!key.includes("-----BEGIN PRIVATE KEY-----")) {
-    throw new Error("Invalid private key format: missing BEGIN marker")
+  if (!key.includes("-----BEGIN PRIVATE KEY-----") || !key.includes("-----END PRIVATE KEY-----")) {
+    throw new Error("Invalid private key format: missing BEGIN or END marker")
   }
-  if (!key.includes("-----END PRIVATE KEY-----")) {
-    throw new Error("Invalid private key format: missing END marker")
-  }
-
   return key
 }
 
-// Function to validate environment variables
+// Validates that necessary Google Sheets environment variables are set.
 function validateEnvironmentVariables() {
   const clientEmail = process.env.GOOGLE_SHEETS_CLIENT_EMAIL
   const privateKey = process.env.GOOGLE_SHEETS_PRIVATE_KEY
@@ -46,7 +39,7 @@ function validateEnvironmentVariables() {
   return { clientEmail, privateKey, sheetsId }
 }
 
-// Function to create Google Sheets client
+// Creates and configures the Google Sheets API client.
 async function createSheetsClient() {
   try {
     const { clientEmail, privateKey, sheetsId } = validateEnvironmentVariables()
@@ -69,7 +62,7 @@ async function createSheetsClient() {
   }
 }
 
-// GET - Read data from Google Sheets
+// Handles GET requests to read data from Google Sheets.
 export async function GET(request: NextRequest) {
   try {
     const { sheets, sheetsId } = await createSheetsClient()
@@ -95,26 +88,22 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    // First row contains headers
     const headers = rows[0] || []
     const dataRows = rows.slice(1)
 
-    // Convert rows to objects
     let data = dataRows
-      .map((row, index) => {
+      .map((row) => { // Convert rows to objects
         const record: any = {}
         headers.forEach((header, colIndex) => {
           record[header] = row[colIndex] || ""
         })
         return record
       })
-      .filter((record) => {
-        // Filter out completely empty records
-        return Object.values(record).some((value) => value && value.toString().trim() !== "")
-      })
+      .filter((record) => // Filter out completely empty records
+        Object.values(record).some((value) => value && value.toString().trim() !== "")
+      )
 
-    // Apply limit if specified
-    if (limit && !isNaN(Number.parseInt(limit))) {
+    if (limit && !isNaN(Number.parseInt(limit))) { // Apply limit if specified
       data = data.slice(0, Number.parseInt(limit))
     }
 
@@ -139,7 +128,8 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST - Write data to Google Sheets
+// Handles POST requests to write data to Google Sheets.
+// Supports append and replace modes.
 export async function POST(request: NextRequest) {
   try {
     const { sheets, sheetsId } = await createSheetsClient()
@@ -153,20 +143,13 @@ export async function POST(request: NextRequest) {
 
     console.log(`Writing ${data.length} records to Google Sheets - Append mode: ${appendMode}`)
 
-    // Get headers from the first data item
-    const headers = Object.keys(data[0])
+    const headers = Object.keys(data[0]) // Get headers from the first data item
 
     if (!appendMode) {
-      // Replace mode - clear existing data and write new data
+      // Replace mode: Clear existing data and write new data
       console.log("Clearing existing data...")
+      await sheets.spreadsheets.values.clear({ spreadsheetId: sheetsId, range: range })
 
-      // Clear the sheet first
-      await sheets.spreadsheets.values.clear({
-        spreadsheetId: sheetsId,
-        range: range,
-      })
-
-      // Prepare data with headers
       const values = [
         headers,
         ...data.map((record) =>
@@ -176,38 +159,30 @@ export async function POST(request: NextRequest) {
           }),
         ),
       ]
-
-      // Write all data
       await sheets.spreadsheets.values.update({
         spreadsheetId: sheetsId,
         range: `${range}!A1`,
         valueInputOption: "RAW",
         requestBody: { values },
       })
-
       return NextResponse.json({
         message: `Successfully replaced all data with ${data.length} records`,
         recordsWritten: data.length,
         mode: "replace",
       })
     } else {
-      // Append mode - add new data, skip duplicates
-
-      // First, read existing data to check for duplicates
+      // Append mode: Add new data, skip duplicates
       const existingResponse = await sheets.spreadsheets.values.get({
         spreadsheetId: sheetsId,
         range: range,
       })
-
       const existingRows = existingResponse.data.values || []
       let existingHeaders: string[] = []
       let existingData: any[] = []
 
       if (existingRows.length > 0) {
         existingHeaders = existingRows[0] || []
-        const existingDataRows = existingRows.slice(1)
-
-        existingData = existingDataRows.map((row) => {
+        existingData = existingRows.slice(1).map((row) => {
           const record: any = {}
           existingHeaders.forEach((header, index) => {
             record[header] = row[index] || ""
@@ -216,11 +191,10 @@ export async function POST(request: NextRequest) {
         })
       }
 
-      // Check for duplicates based on NRP and Tanggal Absensi
+      // Deduplication based on NRP and Tanggal Absensi
       const existingKeys = new Set(
-        existingData.map((record) => `${record.NRP || ""}_${record["Tanggal Absensi"] || ""}`),
+        existingData.map((record) => `${record.NRP || ""}_${record["Tanggal Absensi"] || ""}`)
       )
-
       const newData = data.filter((record) => {
         const key = `${record.NRP || ""}_${record["Tanggal Absensi"] || ""}`
         return !existingKeys.has(key)
@@ -235,38 +209,28 @@ export async function POST(request: NextRequest) {
         })
       }
 
-      // If sheet is empty, write headers first
-      if (existingRows.length === 0) {
-        const values = [
-          headers,
-          ...newData.map((record) =>
-            headers.map((header) => {
-              const value = record[header]
-              return typeof value === "object" ? JSON.stringify(value) : value || ""
-            }),
-          ),
-        ]
+      const valuesToAppend = newData.map((record) =>
+        headers.map((header) => {
+          const value = record[header]
+          return typeof value === "object" ? JSON.stringify(value) : value || ""
+        }),
+      )
 
+      if (existingRows.length === 0) {
+        // If sheet is empty, write headers along with data
         await sheets.spreadsheets.values.update({
           spreadsheetId: sheetsId,
           range: `${range}!A1`,
           valueInputOption: "RAW",
-          requestBody: { values },
+          requestBody: { values: [headers, ...valuesToAppend] },
         })
       } else {
         // Append new data only
-        const values = newData.map((record) =>
-          headers.map((header) => {
-            const value = record[header]
-            return typeof value === "object" ? JSON.stringify(value) : value || ""
-          }),
-        )
-
         await sheets.spreadsheets.values.append({
           spreadsheetId: sheetsId,
           range: range,
           valueInputOption: "RAW",
-          requestBody: { values },
+          requestBody: { values: valuesToAppend },
         })
       }
 
@@ -289,16 +253,12 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// HEAD - Test connection
+// Handles HEAD requests to test the connection to Google Sheets.
 export async function HEAD() {
   try {
     const { sheets, sheetsId } = await createSheetsClient()
-
-    // Test connection by getting spreadsheet metadata
-    await sheets.spreadsheets.get({
-      spreadsheetId: sheetsId,
-    })
-
+    // Test connection by attempting to get spreadsheet metadata
+    await sheets.spreadsheets.get({ spreadsheetId: sheetsId })
     return new NextResponse(null, {
       status: 200,
       headers: {
@@ -318,7 +278,7 @@ export async function HEAD() {
   }
 }
 
-// DELETE - Clear data
+// Handles DELETE requests to clear data from a specified range in Google Sheets.
 export async function DELETE(request: NextRequest) {
   try {
     const { sheets, sheetsId } = await createSheetsClient()
