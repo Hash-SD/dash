@@ -1,17 +1,18 @@
 import sys
 import json
 from http.server import BaseHTTPRequestHandler
-# Menambahkan direktori skrip ke path agar bisa di-import
+
+# Menambahkan direktori skrip kustom ke dalam path
 sys.path.append('python_scripts')
 from kmeans_processor import run_kmeans
 
 class handler(BaseHTTPRequestHandler):
     def do_POST(self):
-        content_length = int(self.headers['Content-Length'])
-        post_data = self.rfile.read(content_length)
-        
         try:
+            content_length = int(self.headers['Content-Length'])
+            post_data = self.rfile.read(content_length)
             input_data = json.loads(post_data)
+            
             features = input_data.get("features")
             k = input_data.get("k")
 
@@ -19,9 +20,10 @@ class handler(BaseHTTPRequestHandler):
                 self.send_response(400)
                 self.send_header('Content-type', 'application/json')
                 self.end_headers()
-                self.wfile.write(json.dumps({"error": "Missing 'features' or 'k'"}).encode('utf-8'))
+                self.wfile.write(json.dumps({"error": "Input 'features' dan 'k' diperlukan"}).encode('utf-8'))
                 return
 
+            # Jalankan fungsi K-Means dari skrip Anda
             result = run_kmeans(features, k)
 
             if result:
@@ -33,12 +35,11 @@ class handler(BaseHTTPRequestHandler):
                 self.send_response(500)
                 self.send_header('Content-type', 'application/json')
                 self.end_headers()
-                self.wfile.write(json.dumps({"error": "K-Means clustering failed"}).encode('utf-8'))
+                self.wfile.write(json.dumps({"error": "Proses K-Means gagal"}).encode('utf-8'))
 
         except Exception as e:
             self.send_response(500)
             self.send_header('Content-type', 'application/json')
             self.end_headers()
             self.wfile.write(json.dumps({"error": str(e)}).encode('utf-8'))
-
         return
