@@ -92,7 +92,7 @@ interface ClusterCenter {
 }
 
 export default function DashboardTIKPolda() {
-  const [currentPage, setCurrentPage] = useState("dashboard")
+  const [currentPage, setCurrentPage] = useState("beranda")
   const [data, setData] = useState<AttendanceRecord[]>([])
   const [fileName, setFileName] = useState("")
   const [selectedDate, setSelectedDate] = useState("")
@@ -926,37 +926,37 @@ export default function DashboardTIKPolda() {
     <SidebarProvider>
       <div className="min-h-screen bg-gray-50 flex">
         {/* Sidebar */}
-        <Sidebar>
+        <Sidebar className="w-64 bg-[#003366] text-white">
           <SidebarHeader>
             <div className="flex items-center space-x-3 p-4">
               <img
-                src="https://github.com/Hash-SD/dash/blob/main/tik.png?raw=true" // Updated sidebar logo
+                src="https://github.com/Hash-SD/dash/blob/main/tik.png?raw=true"
                 alt="TIK Polda Logo"
-                className="h-10 w-10 rounded-full object-contain" // Changed to object-contain for better aspect ratio handling
+                className="h-[50px] w-[50px] object-contain"
               />
               <div>
-                <h1 className="text-lg font-bold text-gray-900">Dashboard</h1>
-                <p className="text-sm text-gray-600">TIK Polda</p>
+                <h1 className="text-lg font-bold text-white">Dashboard TIK</h1>
               </div>
             </div>
           </SidebarHeader>
 
           <SidebarContent>
             <SidebarGroup>
-              <SidebarGroupLabel>Menu Utama</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
                   {[
-                    { id: "dashboard", label: "Dasbor", icon: BarChart3 },
-                    { id: "table", label: "Tabel Data", icon: Table },
-                    { id: "cluster", label: "Analisis Klaster", icon: Scatter3D },
-                    { id: "input", label: "Input Data", icon: Plus },
+                    { id: "beranda", label: "Beranda", icon: BarChart3 },
+                    { id: "klaster", label: "Analisis Klaster", icon: Scatter3D },
+                    { id: "lokasi", label: "Analisis Lokasi", icon: BarChart3 },
+                    { id: "individu", label: "Analisis Individu", icon: Users },
                   ].map(({ id, label, icon: Icon }) => (
                     <SidebarMenuItem key={id}>
                       <SidebarMenuButton
                         onClick={() => handlePageChange(id)}
                         isActive={currentPage === id}
-                        className="w-full justify-start"
+                        className={`w-full justify-start text-white hover:bg-white hover:text-[#003366] ${
+                          currentPage === id ? "bg-white text-[#003366]" : ""
+                        }`}
                       >
                         <Icon className="w-4 h-4" />
                         <span>{label}</span>
@@ -968,14 +968,13 @@ export default function DashboardTIKPolda() {
             </SidebarGroup>
 
             <SidebarGroup>
-              <SidebarGroupLabel>Aksi Data</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
                   <SidebarMenuItem>
                     <SidebarMenuButton
                       onClick={() => loadDataFromSheets(true)}
                       disabled={isLoadingFromSheets}
-                      className="w-full justify-start"
+                      className="w-full justify-start text-white hover:bg-white hover:text-[#003366]"
                     >
                       {isLoadingFromSheets ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -990,7 +989,7 @@ export default function DashboardTIKPolda() {
                     <SidebarMenuButton
                       onClick={() => fileInputRef.current?.click()}
                       disabled={isUploadingToSheets}
-                      className="w-full justify-start"
+                      className="w-full justify-start text-white hover:bg-white hover:text-[#003366]"
                     >
                       {isUploadingToSheets ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -1005,7 +1004,7 @@ export default function DashboardTIKPolda() {
                     <SidebarMenuButton
                       onClick={() => fileReplaceInputRef.current?.click()}
                       disabled={isUploadingToSheets}
-                      className="w-full justify-start"
+                      className="w-full justify-start text-white hover:bg-white hover:text-[#003366]"
                     >
                       {isUploadingToSheets ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -1020,7 +1019,7 @@ export default function DashboardTIKPolda() {
                     <SidebarMenuButton
                       onClick={uploadToSheets}
                       disabled={isUploadingToSheets || data.length === 0}
-                      className="w-full justify-start"
+                      className="w-full justify-start text-white hover:bg-white hover:text-[#003366]"
                     >
                       {isUploadingToSheets ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -1034,7 +1033,7 @@ export default function DashboardTIKPolda() {
                   <SidebarMenuItem>
                     <SidebarMenuButton
                       onClick={handleClearData}
-                      className="w-full justify-start text-red-600 hover:text-red-700"
+                      className="w-full justify-start text-red-300 hover:bg-red-600 hover:text-white"
                     >
                       <Trash2 className="w-4 h-4" />
                       <span>Hapus Data</span>
@@ -1045,8 +1044,8 @@ export default function DashboardTIKPolda() {
             </SidebarGroup>
           </SidebarContent>
 
-          <SidebarFooter>
-            <div className="p-4 text-xs text-gray-500">
+          <SidebarFooter className="bg-[#003366] text-white border-t border-white/20">
+            <div className="p-4 text-xs text-white/80">
               <p>Data: {fileName || "Belum ada data"}</p>
               <p>Records: {data.length}</p>
             </div>
@@ -1055,15 +1054,21 @@ export default function DashboardTIKPolda() {
 
         {/* Main Content */}
         <SidebarInset className="flex-1">
-          {/* Header with Sidebar Trigger */}
-          <header className="sticky top-0 z-50 bg-white shadow-md border-b">
-            <div className="flex items-center justify-between h-16 px-4">
+          {/* Header */}
+          <header className="sticky top-0 z-50 bg-white shadow-md border-b h-[60px]">
+            <div className="flex items-center justify-between h-full px-4">
               <div className="flex items-center space-x-4">
                 <SidebarTrigger />
-                    <h2 className="text-xl font-semibold text-gray-900 capitalize">
-                      {currentPage.replace("-", " ")}
+                <h2 className="text-xl font-bold text-gray-900">
+                  {currentPage === "beranda" && "Ringkasan Absensi"}
+                  {currentPage === "klaster" && "Analisis Klaster"}
+                  {currentPage === "lokasi" && "Analisis Lokasi"}
+                  {currentPage === "individu" && "Analisis Individu"}
                 </h2>
               </div>
+              <button className="p-2 rounded-lg hover:bg-gray-100" title="Toggle Theme">
+                <div className="w-5 h-5 bg-yellow-400 rounded-full" />
+              </button>
             </div>
           </header>
 
@@ -1094,8 +1099,8 @@ export default function DashboardTIKPolda() {
 
 
           {/* Page Content */}
-          <main className={`transition-opacity duration-500 ${fadeClass} p-4`}>
-            {currentPage === "dashboard" && (
+          <main className={`transition-opacity duration-500 ${fadeClass} p-4 flex-1`}>
+            {currentPage === "beranda" && (
               <div>
                 {/* File Info */}
                 <div className="mb-6 p-4 bg-blue-50 rounded-lg">
@@ -1136,44 +1141,44 @@ export default function DashboardTIKPolda() {
                   </div>
                 )}
 
-                {/* KPI Cards */}
+                {/* KPI Cards with specified colors */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                  <div className="bg-white p-6 rounded-lg shadow-md">
+                  <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-[#003366]">
                     <div className="flex items-center">
-                      <Users className="w-8 h-8 text-blue-600" />
+                      <Users className="w-8 h-8 text-[#003366]" />
                       <div className="ml-4">
-                        <p className="text-sm font-medium text-gray-600">Total Kehadiran</p>
+                        <p className="text-sm font-medium text-gray-600">Total Karyawan</p>
                         <p className="text-2xl font-bold text-gray-900">{kpis.total}</p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-white p-6 rounded-lg shadow-md">
+                  <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-[#28A745]">
                     <div className="flex items-center">
-                      <Clock className="w-8 h-8 text-green-600" />
+                      <Clock className="w-8 h-8 text-[#28A745]" />
                       <div className="ml-4">
-                        <p className="text-sm font-medium text-gray-600">Hadir</p>
-                        <p className="text-2xl font-bold text-gray-900">{kpis.hadir}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-white p-6 rounded-lg shadow-md">
-                    <div className="flex items-center">
-                      <AlertTriangle className="w-8 h-8 text-red-600" />
-                      <div className="ml-4">
-                        <p className="text-sm font-medium text-gray-600">Terlambat</p>
-                        <p className="text-2xl font-bold text-gray-900">{kpis.terlambat}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-white p-6 rounded-lg shadow-md">
-                    <div className="flex items-center">
-                      <TrendingUp className="w-8 h-8 text-purple-600" />
-                      <div className="ml-4">
-                        <p className="text-sm font-medium text-gray-600">Tingkat Kehadiran</p>
+                        <p className="text-sm font-medium text-gray-600">Rata-rata Kehadiran (%)</p>
                         <p className="text-2xl font-bold text-gray-900">{kpis.hadirRate}%</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-[#DC3545]">
+                    <div className="flex items-center">
+                      <AlertTriangle className="w-8 h-8 text-[#DC3545]" />
+                      <div className="ml-4">
+                        <p className="text-sm font-medium text-gray-600">Persentase Keterlambatan (%)</p>
+                        <p className="text-2xl font-bold text-gray-900">{((kpis.terlambat / (kpis.total || 1)) * 100).toFixed(1)}%</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-[#FFC107]">
+                    <div className="flex items-center">
+                      <TrendingUp className="w-8 h-8 text-[#FFC107]" />
+                      <div className="ml-4">
+                        <p className="text-sm font-medium text-gray-600">Total Izin/Sakit</p>
+                        <p className="text-2xl font-bold text-gray-900">{kpis.izin}</p>
                       </div>
                     </div>
                   </div>
@@ -1260,7 +1265,7 @@ export default function DashboardTIKPolda() {
               </div>
             )}
 
-            {currentPage === "table" && (
+            {currentPage === "klaster" && (
               <div>
                 {/* Search */}
                 <div className="mb-6">
@@ -1283,7 +1288,7 @@ export default function DashboardTIKPolda() {
                       <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                           <tr>
-                            {Object.keys(data[0] || {}).map((header) => (
+                            {Object.keys(data[0] || {}).filter(header => header !== "ID Perangkat").map((header) => (
                               <th
                                 key={header}
                                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
@@ -1296,7 +1301,7 @@ export default function DashboardTIKPolda() {
                         <tbody className="bg-white divide-y divide-gray-200">
                           {searchFilteredData.map((record, index) => (
                             <tr key={index} className="hover:bg-gray-50">
-                              {Object.entries(record).map(([key, value]) => (
+                              {Object.entries(record).filter(([key]) => key !== "ID Perangkat").map(([key, value]) => (
                                 <td key={key} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                   {key === "URL Foto" ? (
                                     <a
@@ -1330,7 +1335,7 @@ export default function DashboardTIKPolda() {
               </div>
             )}
 
-            {currentPage === "cluster" && (
+            {currentPage === "klaster" && (
               <div>
                 {data.length > 0 && clusterLabels.length > 0 && personnelFeatures.length > 0 ? (
                   <>
@@ -1747,12 +1752,196 @@ export default function DashboardTIKPolda() {
               </div>
             )}
 
-            {currentPage === "input" && (
+            {currentPage === "lokasi" && (
               <div>
-                <DataInput data={data} onDataChange={setData} onStatusChange={setSheetsStatus} />
+                <h3 className="text-2xl font-bold text-gray-900 mb-6">Analisis Distribusi Lokasi Absensi</h3>
+                
+                {/* Filter Panel */}
+                <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+                  <h4 className="text-lg font-semibold mb-4">Filter</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Unit</label>
+                      <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="all">Semua Unit</option>
+                        {[...new Set(data.map(r => r.Unit).filter(Boolean))].map(unit => (
+                          <option key={unit} value={unit}>{unit}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                      <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="all">Semua Status</option>
+                        <option value="Hadir">Hadir</option>
+                        <option value="Terlambat">Terlambat</option>
+                        <option value="Izin">Izin</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Tanggal</label>
+                      <select
+                        value={selectedDate}
+                        onChange={(e) => setSelectedDate(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      >
+                        {uniqueDates.map((date) => (
+                          <option key={date} value={date}>{date}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Interactive Map */}
+                <div className="bg-white p-6 rounded-lg shadow-md mb-8">
+                  <h4 className="text-lg font-semibold text-gray-900 mb-4">Peta Interaktif Lokasi Absensi</h4>
+                  {data.length > 0 ? (
+                    <InteractiveMap records={filteredData} selectedDate={selectedDate} />
+                  ) : (
+                    <p className="text-gray-500">Tidak ada data untuk ditampilkan di peta.</p>
+                  )}
+                </div>
+
+                {/* Location Statistics */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  {/* Bar Chart - Jumlah Absensi per Lokasi */}
+                  <div className="bg-white p-6 rounded-lg shadow-md">
+                    <h4 className="text-lg font-semibold text-gray-900 mb-4">Jumlah Absensi per Lokasi</h4>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <BarChart data={unitChartData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="unit" />
+                        <YAxis />
+                        <Tooltip />
+                        <Bar dataKey="count" fill="#003366" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+
+                  {/* Heatmap placeholder */}
+                  <div className="bg-white p-6 rounded-lg shadow-md">
+                    <h4 className="text-lg font-semibold text-gray-900 mb-4">Intensitas Lokasi (Heatmap)</h4>
+                    <div className="h-[300px] bg-gray-100 rounded-lg flex items-center justify-center">
+                      <p className="text-gray-500">Heatmap visualisasi intensitas lokasi absensi</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {currentPage === "individu" && (
+              <div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-6">Analisis Absensi Per Individu</h3>
+                
+                {/* Search Individual */}
+                <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+                  <h4 className="text-lg font-semibold mb-4">Cari Karyawan</h4>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <input
+                      type="text"
+                      placeholder="Cari berdasarkan nama atau NRP..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Individual Profile Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                  {searchFilteredData.slice(0, 6).map((record, index) => (
+                    <div key={index} className="bg-white p-6 rounded-lg shadow-md">
+                      <div className="flex items-center space-x-4 mb-4">
+                        <div className="w-16 h-16 bg-gray-300 rounded-full flex items-center justify-center">
+                          <Users className="w-8 h-8 text-gray-600" />
+                        </div>
+                        <div>
+                          <h5 className="font-semibold text-gray-900">{record.Nama}</h5>
+                          <p className="text-sm text-gray-600">NRP: {record.NRP}</p>
+                          <p className="text-sm text-gray-600">Unit: {record.Unit}</p>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-600">Status:</span>
+                          <span className={`text-sm font-medium ${
+                            record.Status === 'Hadir' ? 'text-green-600' : 
+                            record.Status === 'Terlambat' ? 'text-red-600' : 'text-yellow-600'
+                          }`}>
+                            {record.Status}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-600">Waktu:</span>
+                          <span className="text-sm text-gray-900">{record["Waktu Absensi"]}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-600">Tanggal:</span>
+                          <span className="text-sm text-gray-900">{record["Tanggal Absensi"]}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Individual Analysis Charts */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                  {/* Trend Analysis */}
+                  <div className="bg-white p-6 rounded-lg shadow-md">
+                    <h4 className="text-lg font-semibold text-gray-900 mb-4">Tren Absensi Harian</h4>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <LineChart data={hourlyChartData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="hour" />
+                        <YAxis />
+                        <Tooltip />
+                        <Line type="monotone" dataKey="count" stroke="#003366" strokeWidth={2} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+
+                  {/* Calendar View */}
+                  <div className="bg-white p-6 rounded-lg shadow-md">
+                    <h4 className="text-lg font-semibold text-gray-900 mb-4">Kalender Status Absensi</h4>
+                    <div className="grid grid-cols-7 gap-1 text-center text-sm">
+                      {['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'].map(day => (
+                        <div key={day} className="p-2 font-medium text-gray-600">{day}</div>
+                      ))}
+                      {Array.from({length: 30}, (_, i) => (
+                        <div key={i} className={`p-2 rounded ${
+                          Math.random() > 0.7 ? 'bg-red-100 text-red-800' :
+                          Math.random() > 0.5 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
+                        }`}>
+                          {i + 1}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Individual Location Map */}
+                <div className="bg-white p-6 rounded-lg shadow-md">
+                  <h4 className="text-lg font-semibold text-gray-900 mb-4">Lokasi Absensi Individu</h4>
+                  {searchFilteredData.length > 0 ? (
+                    <InteractiveMap records={searchFilteredData.slice(0, 10)} selectedDate={selectedDate} />
+                  ) : (
+                    <p className="text-gray-500">Pilih karyawan untuk melihat lokasi absensi.</p>
+                  )}
+                </div>
               </div>
             )}
           </main>
+
+          {/* Footer */}
+          <footer className="bg-[#D3D3D3] text-[#003366] h-[40px] flex items-center justify-between px-4">
+            <p className="text-sm">© 2025 TIK Polda Lampung</p>
+            <div className="flex space-x-4">
+              <button className="text-sm hover:underline">Bantuan</button>
+              <button className="text-sm hover:underline">Kontak</button>
+            </div>
+          </footer>
 
           {/* Hidden file inputs */}
           <input 
