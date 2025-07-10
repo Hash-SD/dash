@@ -5,7 +5,7 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { Upload, BarChart3, Users, RefreshCw, Loader2, Trash2 } from 'lucide-react';
 import ClusterAnalysisView from '@/components/cluster-analysis-view';
-import BerandaView from '@/components/beranda-view'; // Impor komponen Beranda
+import BerandaView from './components/beranda-view'; // Impor komponen Beranda
 import { 
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, 
   SidebarGroupLabel, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuButton, 
