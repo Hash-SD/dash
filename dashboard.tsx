@@ -5,13 +5,14 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { Upload, BarChart3, Users, RefreshCw, Loader2, Trash2 } from 'lucide-react';
 import ClusterAnalysisView from '@/components/cluster-analysis-view';
-import BerandaView from './components/beranda-view'; // Impor komponen Beranda
+import BerandaView from '@/components/beranda-view';
 import { 
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, 
   SidebarGroupLabel, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuButton, 
   SidebarMenuItem, SidebarProvider, SidebarTrigger 
 } from "@/components/ui/sidebar";
 
+// Tipe data ini digunakan oleh beberapa komponen
 interface AttendanceRecord {
   NRP: string;
   Nama: string;
@@ -35,7 +36,8 @@ export default function DashboardTIKPolda() {
   const [statusMessage, setStatusMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
+  const fileReplaceInputRef = useRef<HTMLInputElement>(null);
+  
   const showStatus = (message: string, duration = 4000) => {
     setStatusMessage(message);
     setTimeout(() => setStatusMessage(""), duration);
@@ -65,6 +67,55 @@ export default function DashboardTIKPolda() {
   
   useEffect(() => { loadDataFromSheets(); }, [loadDataFromSheets]);
 
+  const parseAndUpload = useCallback(async (file: File, replace: boolean) => {
+    setIsLoading(true);
+    const actionText = replace ? "Mengganti" : "Menambahkan";
+    showStatus(`Memproses ${file.name}...`);
+    try {
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        try {
+          const fileData = event.target?.result;
+          if (!fileData) throw new Error("Tidak bisa membaca file.");
+          const XLSX = require('xlsx');
+          const workbook = XLSX.read(fileData, { type: 'binary' });
+          const sheetName = workbook.SheetNames[0];
+          const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+          
+          if (jsonData.length === 0) throw new Error("File kosong.");
+
+          showStatus(`${actionText} ${jsonData.length} baris ke Google Sheets...`);
+          const response = await fetch("/api/sheets", {
+            method: "POST",
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ data: jsonData, appendMode: !replace }),
+          });
+          
+          const result = await response.json();
+          if (!response.ok) throw new Error(result.error || `Gagal ${actionText.toLowerCase()} data.`);
+          
+          showStatus("Sinkronisasi berhasil. Memuat ulang data...", 6000);
+          await loadDataFromSheets();
+        } catch (err: any) {
+           showStatus(`Error: ${err.message}`, 6000);
+           setIsLoading(false);
+        }
+      };
+      reader.readAsBinaryString(file);
+    } catch (error: any) {
+      showStatus(`Error: ${error.message}`, 6000);
+      setIsLoading(false);
+    }
+  }, [loadDataFromSheets]);
+
+  // INI FUNGSI YANG HILANG DAN SEKARANG DITAMBAHKAN KEMBALI
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, replace: boolean) => {
+    if (e.target.files?.[0]) {
+      parseAndUpload(e.target.files[0], replace);
+    }
+    if(e.target) e.target.value = ''; // Reset file input
+  };
+
   const PageContent = () => {
     if (isLoading) {
       return <div className="flex justify-center items-center h-full"><Loader2 className="w-12 h-12 animate-spin text-blue-600"/></div>
@@ -74,7 +125,7 @@ export default function DashboardTIKPolda() {
     }
     switch (currentPage) {
       case "beranda":
-        return <BerandaView data={data} />; // Panggil komponen BerandaView
+        return <BerandaView data={data} />;
       case "klaster":
         return <ClusterAnalysisView data={data} />;
       default:
@@ -100,7 +151,33 @@ export default function DashboardTIKPolda() {
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
+            <SidebarGroup className="mt-auto">
+              <SidebarGroupLabel>Manajemen Data</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton onClick={() => loadDataFromSheets()} disabled={isLoading}>
+                      {isLoading ? <Loader2 className="animate-spin"/> : <RefreshCw />}<span>Refresh Data</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton onClick={() => fileInputRef.current?.click()} disabled={isLoading}>
+                      <Upload /><span>Unggah & Tambah</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton onClick={() => fileReplaceInputRef.current?.click()} disabled={isLoading}>
+                      <Upload /><span>Ganti Data</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
           </SidebarContent>
+          <SidebarFooter className="p-4 text-xs">
+            <p>Sumber Data: {fileName}</p>
+            <p>Total Baris: {data.length}</p>
+          </SidebarFooter>
         </Sidebar>
 
         <SidebarInset>
@@ -113,8 +190,10 @@ export default function DashboardTIKPolda() {
             <PageContent />
           </main>
         </SidebarInset>
-
-        <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept=".xlsx, .xls, .csv"/>
+        
+        {/* PASTIKAN INPUT MEMANGGIL FUNGSI YANG BENAR */}
+        <input type="file" ref={fileInputRef} onChange={(e) => handleFileChange(e, false)} className="hidden" accept=".xlsx, .xls, .csv"/>
+        <input type="file" ref={fileReplaceInputRef} onChange={(e) => handleFileChange(e, true)} className="hidden" accept=".xlsx, .xls, .csv"/>
       </div>
     </SidebarProvider>
   );
