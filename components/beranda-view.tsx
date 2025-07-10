@@ -1,12 +1,11 @@
 "use client";
 
-// This import statement is now corrected to include useEffect
 import React, { useMemo, useState, useEffect } from 'react';
 import { PieChart, Pie, Cell, BarChart, Bar, ResponsiveContainer, Tooltip, Legend, CartesianGrid, XAxis, YAxis } from 'recharts';
 import { Users, Calendar, TrendingUp, FileText } from 'lucide-react';
 import InteractiveMap from "@/components/ui/InteractiveMap";
 
-// Define the types needed by this component
+// Definisikan tipe data yang dibutuhkan oleh komponen ini
 interface AttendanceRecord {
   NRP: string;
   Nama: string;
@@ -34,12 +33,12 @@ const StatCard = ({ icon: Icon, label, value }: { icon: React.ElementType, label
   </div>
 );
 
-// Main component for the Beranda view
+// Komponen utama untuk tampilan Beranda
 export default function BerandaView({ data }: BerandaViewProps) {
   const uniqueDates = useMemo(() => [...new Set(data.map(d => d["Tanggal Absensi"]).filter(Boolean))], [data]);
-  const [selectedDate, setSelectedDate] = useState(uniqueDates[0] || "");
+  const [selectedDate, setSelectedDate] = useState("");
 
-  // This useEffect ensures a date is selected when the component loads
+  // useEffect ini memastikan tanggal default dipilih saat komponen pertama kali dimuat
   useEffect(() => {
     if (uniqueDates.length > 0 && !selectedDate) {
       setSelectedDate(uniqueDates[0]);
