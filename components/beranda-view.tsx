@@ -2,7 +2,7 @@
 
 "use client";
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { PieChart, Pie, Cell, BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Users, Calendar, TrendingUp, FileText } from 'lucide-react';
 import InteractiveMap from "@/components/ui/InteractiveMap";
