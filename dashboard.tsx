@@ -641,8 +641,15 @@ export default function DashboardTIKPolda() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `K-Means API request failed with status ${response.status}`);
+        let errorMessage = `K-Means API request failed with status ${response.status}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch (parseError) {
+          // If we can't parse the error response, use the status message
+          errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
       }
 
       const result = await response.json();
@@ -650,8 +657,25 @@ export default function DashboardTIKPolda() {
         throw new Error(result.error);
       }
 
-      setClusterLabels(result.cluster_labels || []);
-      setBackendClusterCenters(result.cluster_centers || []);
+      // Validate response structure
+      if (!result.cluster_labels || !Array.isArray(result.cluster_labels)) {
+        throw new Error("Invalid response: missing or invalid cluster_labels");
+      }
+      
+      if (!result.cluster_centers || !Array.isArray(result.cluster_centers)) {
+        throw new Error("Invalid response: missing or invalid cluster_centers");
+      }
+
+      if (result.cluster_labels.length !== featuresToCluster.length) {
+        throw new Error("Response validation failed: cluster labels count mismatch");
+      }
+
+      if (result.cluster_centers.length !== k) {
+        throw new Error("Response validation failed: cluster centers count mismatch");
+      }
+
+      setClusterLabels(result.cluster_labels);
+      setBackendClusterCenters(result.cluster_centers);
       // Store the features that were sent for clustering, to align with labels
       // This assumes calculateFeatures() returns an array of objects, and we extract 'features' array from each
       // For now, storing the raw numerical features sent.
@@ -659,7 +683,8 @@ export default function DashboardTIKPolda() {
                                              // Or store the full feature objects if needed for later mapping.
     } catch (error: any) {
       console.error("Error running K-Means backend:", error);
-      setKmeansError(error.message || "Gagal menjalankan K-Means di backend.");
+      const errorMessage = error instanceof Error ? error.message : "Gagal menjalankan K-Means di backend.";
+      setKmeansError(errorMessage);
       setClusterLabels([]);
       setBackendClusterCenters([]);
     } finally {
@@ -671,47 +696,80 @@ export default function DashboardTIKPolda() {
   // This useEffect will be responsible for preparing data for visualization (the 'clusters' state)
   // once clusterLabels are available from the backend.
   useEffect(() => {
-    if (data.length > 0 && personnelFeatures.length > 0 && clusterLabels.length === personnelFeatures.length) {
-      // The `personnelFeatures` here should be the array of objects produced by `calculateFeatures`,
-      // before extracting the numerical `features` array for the backend.
-      // This mapping needs to be precise. Let's assume `calculateFeatures` produces an array of objects,
-      // and we also store these original objects that correspond to `clusterLabels`.
+    try {
+      if (data.length > 0 && personnelFeatures.length > 0 && clusterLabels.length === personnelFeatures.length) {
+        // The `personnelFeatures` here should be the array of objects produced by `calculateFeatures`,
+        // before extracting the numerical `features` array for the backend.
+        // This mapping needs to be precise. Let's assume `calculateFeatures` produces an array of objects,
+        // and we also store these original objects that correspond to `clusterLabels`.
 
-      // For now, let's adjust `calculateFeatures` to return an object that also includes the original record
-      // or enough info to map back. The `personnelFeatures` state should store these.
+        // For now, let's adjust `calculateFeatures` to return an object that also includes the original record
+        // or enough info to map back. The `personnelFeatures` state should store these.
 
-      const newClustersForVisualization: ClusterPoint[] = personnelFeatures.map((featureSet, index) => ({
-        x: featureSet.avgArrivalTime, // Visualization X-coordinate
-        y: featureSet.tardinessRate,  // Visualization Y-coordinate
-        cluster: clusterLabels[index], // Label from backend
-        record: featureSet.record,     // Original record associated with this feature set
-        features: featureSet.features, // Numerical features (already normalized by backend or raw if preferred)
-      }));
-      setClusters(newClustersForVisualization);
+        const newClustersForVisualization: ClusterPoint[] = personnelFeatures
+          .map((featureSet, index) => {
+            // Validate featureSet structure
+            if (!featureSet || typeof featureSet !== 'object') {
+              console.warn(`Invalid featureSet at index ${index}:`, featureSet);
+              return null;
+            }
 
-      // Update visualization cluster centers (optional, could also use backendClusterCenters if scaled appropriately)
-      // This calculates centroids based on the visualization coordinates (avgArrivalTime, tardinessRate)
-      const newVisCenters: ClusterCenter[] = [];
-      for (let i = 0; i < kValue; i++) {
-        const pointsInCluster = newClustersForVisualization.filter(p => p.cluster === i);
-        if (pointsInCluster.length > 0) {
-          const avgX = pointsInCluster.reduce((sum, p) => sum + p.x, 0) / pointsInCluster.length;
-          const avgY = pointsInCluster.reduce((sum, p) => sum + p.y, 0) / pointsInCluster.length;
-          newVisCenters.push({ x: avgX, y: avgY });
-        } else {
-          // Handle empty cluster for visualization center (e.g., place it far off or use a default)
-           // Or use a more sophisticated way if backendClusterCenters can be unscaled
-          newVisCenters.push({ x: 0, y: 0});
+            // Ensure all required properties exist and are valid
+            const x = typeof featureSet.avgArrivalTime === 'number' ? featureSet.avgArrivalTime : 480; // Default to 8:00 AM
+            const y = typeof featureSet.tardinessRate === 'number' ? featureSet.tardinessRate : 0;
+            const cluster = typeof clusterLabels[index] === 'number' ? clusterLabels[index] : 0;
+            const record = featureSet.record || {};
+            const features = Array.isArray(featureSet.features) ? featureSet.features : [];
+
+            return {
+              x,
+              y,
+              cluster,
+              record,
+              features,
+            };
+          })
+          .filter((item): item is ClusterPoint => item !== null); // Filter out any null entries
+
+        setClusters(newClustersForVisualization);
+
+        // Update visualization cluster centers (optional, could also use backendClusterCenters if scaled appropriately)
+        // This calculates centroids based on the visualization coordinates (avgArrivalTime, tardinessRate)
+        const newVisCenters: ClusterCenter[] = [];
+        for (let i = 0; i < kValue; i++) {
+          const pointsInCluster = newClustersForVisualization.filter(p => p && typeof p.cluster === 'number' && p.cluster === i);
+          if (pointsInCluster.length > 0) {
+            const validPoints = pointsInCluster.filter(p => typeof p.x === 'number' && typeof p.y === 'number');
+            if (validPoints.length > 0) {
+              const avgX = validPoints.reduce((sum, p) => sum + p.x, 0) / validPoints.length;
+              const avgY = validPoints.reduce((sum, p) => sum + p.y, 0) / validPoints.length;
+              newVisCenters.push({ x: avgX, y: avgY });
+            } else {
+              newVisCenters.push({ x: 480, y: 0 }); // Default position
+            }
+          } else {
+            // Handle empty cluster for visualization center (e.g., place it far off or use a default)
+            // Or use a more sophisticated way if backendClusterCenters can be unscaled
+            newVisCenters.push({ x: 480, y: 0});
+          }
         }
-      }
-      setClusterCenters(newVisCenters);
+        setClusterCenters(newVisCenters);
 
-    } else if (clusterLabels.length === 0 && personnelFeatures.length > 0) {
-      // If labels are cleared but features were there, clear visualization too
+      } else if (clusterLabels.length === 0 && personnelFeatures.length > 0) {
+        // If labels are cleared but features were there, clear visualization too
+        setClusters([]);
+        setClusterCenters([]);
+      }
+    } catch (error) {
+      console.error("Error updating cluster visualization:", error);
+      // Reset to safe state on error
       setClusters([]);
       setClusterCenters([]);
+      if (!kmeansError) {
+        setKmeansError("Terjadi kesalahan saat memproses data klaster untuk visualisasi.");
+      }
     }
-  }, [clusterLabels, personnelFeatures, data, kValue]);
+  }, [clusterLabels, personnelFeatures, data, kValue, kmeansError]);
 
 
   // Run K-Means clustering when data or kValue changes
@@ -751,79 +809,92 @@ export default function DashboardTIKPolda() {
     setIsAnalyzing(true);
     setAiAnalysis(""); // Clear previous analysis
 
-    const clusterSummary = Array.from({ length: kValue }, (_, i) => {
-      // Filter points belonging to the current cluster from the `clusters` state (which has backend labels)
-      const clusterPoints = clusters.filter((p) => p.cluster === i);
-      if (clusterPoints.length === 0) return null;
-
-      // The `clusterPoints` already contain the original record and calculated features for visualization (x, y)
-      // We need to ensure the `personnelFeatures` (which `calculateFeatures` produced)
-      // are correctly mapped to these `clusterPoints` if we need more detailed features
-      // than just x and y for the summary.
-
-      // Let's re-access the full feature objects for the summary
-      // This assumes `personnelFeatures` state holds the array of objects { record, nrp, ..., features: [...] }
-      // and `clusterLabels` correctly maps to this array.
-
-      const membersInCluster = personnelFeatures.filter((pf, index) => clusterLabels[index] === i);
-
-      if (membersInCluster.length === 0) return null;
-
-
-      const avgArrival = membersInCluster.reduce((sum, pf) => sum + pf.avgArrivalTime, 0) / membersInCluster.length;
-      const avgTardiness = membersInCluster.reduce((sum, pf) => sum + pf.tardinessRate, 0) / membersInCluster.length;
-      const avgHadir = membersInCluster.reduce((sum, pf) => sum + pf.total_hadir, 0) / membersInCluster.length;
-      const avgTerlambat = membersInCluster.reduce((sum, pf) => sum + pf.total_terlambat, 0) / membersInCluster.length;
-      const avgIzin = membersInCluster.reduce((sum, pf) => sum + pf.total_izin, 0) / membersInCluster.length;
-      const avgAkurasi = membersInCluster.reduce((sum, pf) => sum + pf.rata2_akurasi_lokasi, 0) / membersInCluster.length;
-      const avgIpBerbeda = membersInCluster.reduce((sum, pf) => sum + pf.jumlah_ip_berbeda, 0) / membersInCluster.length;
-      const avgPerangkatBerbeda = membersInCluster.reduce((sum, pf) => sum + pf.jumlah_perangkat_berbeda, 0) / membersInCluster.length;
-
-
-      let clusterName = ""; // You might want to derive this from backend_cluster_centers or other metrics
-      // Example naming based on current frontend logic, adapt as needed
-      if (avgTardiness < 5 && avgArrival < 480 && avgIpBerbeda <= 1.2) clusterName = "Disiplin Tinggi";
-      else if (avgTardiness < 15 && avgIpBerbeda <= 2) clusterName = "Disiplin Sedang";
-      else if (avgTardiness < 30) clusterName = "Perlu Pembinaan";
-      else if (avgIpBerbeda > 3 || avgPerangkatBerbeda > 2) clusterName = "Inkonsisten";
-      else clusterName = "Bermasalah";
-      
-      return {
-        cluster: i,
-        name: clusterName, // Consider if backend should suggest names or if frontend derives it
-        memberCount: membersInCluster.length,
-        avgArrivalTime: `${Math.floor(avgArrival / 60)}:${String(Math.floor(avgArrival % 60)).padStart(2, "0")}`,
-        tardinessRate: `${avgTardiness.toFixed(1)}%`,
-        avgHadir: avgHadir.toFixed(1),
-        avgTerlambat: avgTerlambat.toFixed(1),
-        avgIzin: avgIzin.toFixed(1),
-        avgAkurasiLokasi: `${avgAkurasi.toFixed(1)}m`,
-        avgIpBerbeda: avgIpBerbeda.toFixed(1),
-        avgPerangkatBerbeda: avgPerangkatBerbeda.toFixed(1),
-        members: membersInCluster.map((pf) => ({
-          nama: pf.record.Nama || "",
-          unit: pf.record.Unit || "",
-          nrp: pf.record.NRP || "",
-        })),
-        unitDistribution: membersInCluster.reduce(
-          (acc, pf) => {
-            const unit = pf.record.Unit || "Unknown";
-            acc[unit] = (acc[unit] || 0) + 1;
-            return acc;
-          },
-          {} as Record<string, number>
-        ),
-      };
-    }).filter(Boolean);
-
-
-    if (!clusterSummary || clusterSummary.length === 0) {
-        setAiAnalysis("<p>Tidak ada ringkasan klaster yang valid untuk dikirim ke AI.</p>");
-        setIsAnalyzing(false);
-        return;
-    }
-
     try {
+      const clusterSummary = Array.from({ length: kValue }, (_, i) => {
+        // Filter points belonging to the current cluster from the `clusters` state (which has backend labels)
+        const clusterPoints = clusters.filter((p) => p && typeof p.cluster === 'number' && p.cluster === i);
+        if (clusterPoints.length === 0) return null;
+
+        // The `clusterPoints` already contain the original record and calculated features for visualization (x, y)
+        // We need to ensure the `personnelFeatures` (which `calculateFeatures` produced)
+        // are correctly mapped to these `clusterPoints` if we need more detailed features
+        // than just x and y for the summary.
+
+        // Let's re-access the full feature objects for the summary
+        // This assumes `personnelFeatures` state holds the array of objects { record, nrp, ..., features: [...] }
+        // and `clusterLabels` correctly maps to this array.
+
+        const membersInCluster = personnelFeatures.filter((pf, index) => 
+          pf && typeof pf === 'object' && 
+          clusterLabels[index] !== undefined && 
+          clusterLabels[index] === i
+        );
+
+        if (membersInCluster.length === 0) return null;
+
+        // Calculate averages with error handling
+        const safeAverage = (values: number[]) => values.length > 0 ? values.reduce((a, b) => a + b, 0) / values.length : 0;
+        
+        const avgArrivalValues = membersInCluster.map(m => typeof m.avgArrivalTime === 'number' ? m.avgArrivalTime : 480).filter(v => !isNaN(v));
+        const avgTardinessValues = membersInCluster.map(m => typeof m.tardinessRate === 'number' ? m.tardinessRate : 0).filter(v => !isNaN(v));
+        const avgHadirValues = membersInCluster.map(m => typeof m.total_hadir === 'number' ? m.total_hadir : 0).filter(v => !isNaN(v));
+        const avgTerlambatValues = membersInCluster.map(m => typeof m.total_terlambat === 'number' ? m.total_terlambat : 0).filter(v => !isNaN(v));
+        const avgIzinValues = membersInCluster.map(m => typeof m.total_izin === 'number' ? m.total_izin : 0).filter(v => !isNaN(v));
+        const avgAkurasiValues = membersInCluster.map(m => typeof m.rata2_akurasi_lokasi === 'number' ? m.rata2_akurasi_lokasi : 10).filter(v => !isNaN(v));
+        const avgIpValues = membersInCluster.map(m => typeof m.jumlah_ip_berbeda === 'number' ? m.jumlah_ip_berbeda : 1).filter(v => !isNaN(v));
+        const avgPerangkatValues = membersInCluster.map(m => typeof m.jumlah_perangkat_berbeda === 'number' ? m.jumlah_perangkat_berbeda : 1).filter(v => !isNaN(v));
+
+        const avgArrival = safeAverage(avgArrivalValues);
+        const avgTardiness = safeAverage(avgTardinessValues);
+        const avgHadir = safeAverage(avgHadirValues);
+        const avgTerlambat = safeAverage(avgTerlambatValues);
+        const avgIzin = safeAverage(avgIzinValues);
+        const avgAkurasi = safeAverage(avgAkurasiValues);
+        const avgIpBerbeda = safeAverage(avgIpValues);
+        const avgPerangkatBerbeda = safeAverage(avgPerangkatValues);
+
+        let clusterName = ""; // You might want to derive this from backend_cluster_centers or other metrics
+        // Example naming based on current frontend logic, adapt as needed
+        if (avgTardiness < 5 && avgArrival < 480 && avgIpBerbeda <= 1.2) clusterName = "Disiplin Tinggi";
+        else if (avgTardiness < 15 && avgIpBerbeda <= 2) clusterName = "Disiplin Sedang";
+        else if (avgTardiness < 30) clusterName = "Perlu Pembinaan";
+        else if (avgIpBerbeda > 3 || avgPerangkatBerbeda > 2) clusterName = "Inkonsisten";
+        else clusterName = "Bermasalah";
+        
+        return {
+          cluster: i,
+          name: clusterName, // Consider if backend should suggest names or if frontend derives it
+          memberCount: membersInCluster.length,
+          avgArrivalTime: `${Math.floor(avgArrival / 60)}:${String(Math.floor(avgArrival % 60)).padStart(2, "0")}`,
+          tardinessRate: `${avgTardiness.toFixed(1)}%`,
+          avgHadir: avgHadir.toFixed(1),
+          avgTerlambat: avgTerlambat.toFixed(1),
+          avgIzin: avgIzin.toFixed(1),
+          avgAkurasiLokasi: `${avgAkurasi.toFixed(1)}m`,
+          avgIpBerbeda: avgIpBerbeda.toFixed(1),
+          avgPerangkatBerbeda: avgPerangkatBerbeda.toFixed(1),
+          members: membersInCluster.map((pf) => ({
+            nama: (pf.record && pf.record.Nama) ? String(pf.record.Nama) : "",
+            unit: (pf.record && pf.record.Unit) ? String(pf.record.Unit) : "",
+            nrp: (pf.record && pf.record.NRP) ? String(pf.record.NRP) : "",
+          })),
+          unitDistribution: membersInCluster.reduce(
+            (acc, pf) => {
+              const unit = (pf.record && pf.record.Unit) ? String(pf.record.Unit) : "Unknown";
+              acc[unit] = (acc[unit] || 0) + 1;
+              return acc;
+            },
+            {} as Record<string, number>
+          ),
+        };
+      }).filter(Boolean);
+
+      if (!clusterSummary || clusterSummary.length === 0) {
+          setAiAnalysis("<p>Tidak ada ringkasan klaster yang valid untuk dikirim ke AI.</p>");
+          setIsAnalyzing(false);
+          return;
+      }
+
       const response = await fetch("/api/analyze", {
         method: "POST",
         headers: {
@@ -833,18 +904,23 @@ export default function DashboardTIKPolda() {
       })
 
       if (!response.ok) {
-        throw new Error("Failed to generate analysis")
+        throw new Error(`Failed to generate analysis: HTTP ${response.status}`)
       }
 
       const result = await response.json()
-      setAiAnalysis(result.analysis)
+      if (result.analysis) {
+        setAiAnalysis(result.analysis)
+      } else {
+        throw new Error("Invalid response from analysis API")
+      }
     } catch (error) {
       console.error("Error generating AI analysis:", error)
-      setAiAnalysis("<p>Error generating analysis. Please check your API configuration and try again.</p>")
+      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred"
+      setAiAnalysis(`<p>Error generating analysis: ${errorMessage}. Please check your API configuration and try again.</p>`)
     } finally {
       setIsAnalyzing(false)
     }
-  }, [clusters, kValue, data, calculateFeatures])
+  }, [clusters, kValue, data, calculateFeatures, personnelFeatures, clusterLabels])
 
   // Filtered data based on selected date
   const filteredData = useMemo(() => {
@@ -1541,19 +1617,33 @@ export default function DashboardTIKPolda() {
                               if (active && payload && payload.length > 0 && payload[0] && payload[0].payload) {
                                 const data = payload[0].payload as ClusterPoint;
                                 // Ensure data and data.record are valid objects before accessing properties
-                                if (data && typeof data === 'object' && data.record && typeof data.record === 'object') {
-                                  const clusterName = (Array.isArray(clusterNames) && data.cluster >= 0 && data.cluster < clusterNames.length)
-                                    ? clusterNames[data.cluster]
-                                    : `Klaster ${data.cluster}`;
+                                try {
+                                  if (data && typeof data === 'object' && data.record && typeof data.record === 'object') {
+                                    const clusterName = (Array.isArray(clusterNames) && typeof data.cluster === 'number' && data.cluster >= 0 && data.cluster < clusterNames.length)
+                                      ? clusterNames[data.cluster]
+                                      : `Klaster ${data.cluster || 0}`;
+                                    
+                                    // Safely access properties with defaults
+                                    const nama = String(data.record.Nama || 'N/A');
+                                    const unit = String(data.record.Unit || 'N/A');
+                                    const avgTime = typeof data.x === 'number' ? `${Math.floor(data.x / 60)}:${String(Math.floor(data.x % 60)).padStart(2, "0")}` : 'N/A';
+                                    const tardiness = typeof data.y === 'number' ? `${data.y.toFixed(1)}%` : 'N/A';
+
+                                    return (
+                                      <div className="bg-white p-3 border border-gray-300 rounded-lg shadow-lg">
+                                        <p className="font-semibold">{nama}</p>
+                                        <p>Unit: {unit}</p>
+                                        <p>Klaster: {clusterName}</p>
+                                        <p>Avg Kedatangan: {avgTime}</p>
+                                        <p>Tingkat Terlambat: {tardiness}</p>
+                                      </div>
+                                    );
+                                  }
+                                } catch (error) {
+                                  console.warn("Error rendering tooltip:", error);
                                   return (
                                     <div className="bg-white p-3 border border-gray-300 rounded-lg shadow-lg">
-                                      <p className="font-semibold">{String(data.record.Nama ?? 'N/A')}</p>
-                                      <p>Unit: {String(data.record.Unit ?? 'N/A')}</p>
-                                      <p>Klaster: {clusterName}</p>
-                                      <p>
-                                        Avg Kedatangan: {typeof data.x === 'number' ? `${Math.floor(data.x / 60)}:${String(Math.floor(data.x % 60)).padStart(2, "0")}` : 'N/A'}
-                                      </p>
-                                      <p>Tingkat Terlambat: {typeof data.y === 'number' ? `${data.y.toFixed(1)}%` : 'N/A'}</p>
+                                      <p className="text-gray-500">Data tidak tersedia</p>
                                     </div>
                                   );
                                 }
