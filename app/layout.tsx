@@ -2,7 +2,7 @@ import type React from "react"
 import type { Metadata, Viewport } from "next" 
 import "./globals.css"
 
-const newLogoUrl = "https://github.com/Hash-SD/dash/blob/main/tik.png?raw=true";
+const newLogoUrl = "https://cdn-1.timesmedia.co.id/images/2022/03/24/tik-polri.jpg";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://dashboard-tik-polda.vercel.app"), 
@@ -62,9 +62,9 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: newLogoUrl, type: "image/png" },
+      { url: newLogoUrl, type: "image/jpeg" },
     ],
-    apple: [{ url: newLogoUrl, sizes: "180x180", type: "image/png" }],
+    apple: [{ url: newLogoUrl, sizes: "180x180", type: "image/jpeg" }],
     shortcut: newLogoUrl,
   },
   manifest: "/manifest.json",
