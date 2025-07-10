@@ -62,9 +62,9 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: newLogoUrl, type: "image/png" },
+      { url: newLogoUrl, type: "image/jpeg" },
     ],
-    apple: [{ url: newLogoUrl, sizes: "180x180", type: "image/png" }],
+    apple: [{ url: newLogoUrl, sizes: "180x180", type: "image/jpeg" }],
     shortcut: newLogoUrl,
   },
   manifest: "/manifest.json",

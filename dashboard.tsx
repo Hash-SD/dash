@@ -1476,7 +1476,7 @@ export default function DashboardTIKPolda() {
                                             <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarChartData}>
                                                 <PolarGrid />
                                                 <PolarAngleAxis dataKey="metric" tick={{ fontSize: 10 }} />
-                                                <PolarRadiusAxis angle={30} domain={[0, 'auto']} tickFormatter={(value) => value.toFixed(0)} />
+                                                <PolarRadiusAxis angle={30} domain={[0, 'auto']} tickFormatter={(value) => typeof value === 'number' ? value.toFixed(0) : value} />
                                                 {Array.from({ length: kValue }, (_, i) => {
                                                     const clusterNameKey = clusterNames[i] || `Klaster ${i + 1}`;
                                                      // Check if this cluster has any data in the radarChartData
@@ -1528,22 +1528,27 @@ export default function DashboardTIKPolda() {
                           <Tooltip
                             cursor={{ strokeDasharray: "3 3" }}
                             content={({ active, payload }) => {
-                              if (active && payload && payload[0]) {
-                                const data = payload[0].payload as ClusterPoint
-                                return (
-                                  <div className="bg-white p-3 border border-gray-300 rounded-lg shadow-lg">
-                                    <p className="font-semibold">{data.record.Nama}</p>
-                                    <p>Unit: {data.record.Unit}</p>
-                                    <p>Klaster: {clusterNames[data.cluster]}</p>
-                                    <p>
-                                      Avg Kedatangan: {Math.floor(data.x / 60)}:
-                                      {String(Math.floor(data.x % 60)).padStart(2, "0")}
-                                    </p>
-                                    <p>Tingkat Terlambat: {data.y.toFixed(1)}%</p>
-                                  </div>
-                                )
+                              if (active && payload && payload.length > 0 && payload[0] && payload[0].payload) {
+                                const data = payload[0].payload as ClusterPoint;
+                                // Ensure data and data.record are valid objects before accessing properties
+                                if (data && typeof data === 'object' && data.record && typeof data.record === 'object') {
+                                  const clusterName = (Array.isArray(clusterNames) && data.cluster >= 0 && data.cluster < clusterNames.length)
+                                    ? clusterNames[data.cluster]
+                                    : `Klaster ${data.cluster}`;
+                                  return (
+                                    <div className="bg-white p-3 border border-gray-300 rounded-lg shadow-lg">
+                                      <p className="font-semibold">{String(data.record.Nama ?? 'N/A')}</p>
+                                      <p>Unit: {String(data.record.Unit ?? 'N/A')}</p>
+                                      <p>Klaster: {clusterName}</p>
+                                      <p>
+                                        Avg Kedatangan: {typeof data.x === 'number' ? `${Math.floor(data.x / 60)}:${String(Math.floor(data.x % 60)).padStart(2, "0")}` : 'N/A'}
+                                      </p>
+                                      <p>Tingkat Terlambat: {typeof data.y === 'number' ? `${data.y.toFixed(1)}%` : 'N/A'}</p>
+                                    </div>
+                                  );
+                                }
                               }
-                              return null
+                              return null;
                             }}
                           />
                           <Legend />
