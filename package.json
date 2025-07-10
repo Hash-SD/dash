@@ -2,10 +2,10 @@
   "name": "my-v0-project",
   "version": "0.1.0",
   "scripts": {
-    "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "dev": "next dev",
     "lint": "next lint",
+    "start": "next start",
     "vercel-build": "next build"
   },
   "dependencies": {
@@ -58,7 +58,7 @@
     "react-dom": "^18",
     "react-hook-form": "latest",
     "react-is": "^18.0.0",
-    "react-leaflet": "^4.2.1",
+    "react-leaflet": "latest",
     "react-resizable-panels": "latest",
     "recharts": "latest",
     "sonner": "latest",
