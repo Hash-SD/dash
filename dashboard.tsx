@@ -539,14 +539,24 @@ export default function DashboardTIKPolda() {
       else if (record.Status === "Izin") stats.total_izin += 1
 
       // Convert time to minutes from 00:00
-      const waktuAbsensi = record["Waktu Absensi"] || "08:00"
-      const timeParts = waktuAbsensi.split(":")
-      const minutes = Number.parseInt(timeParts[0] || "8") * 60 + Number.parseInt(timeParts[1] || "0")
-      stats.waktu_masuk.push(minutes)
+      const waktuAbsensi = record["Waktu Absensi"];
+      if (waktuAbsensi && typeof waktuAbsensi === 'string' && waktuAbsensi.includes(':')) {
+        const timeParts = waktuAbsensi.split(":");
+        const hours = parseInt(timeParts[0], 10);
+        const minutesPart = parseInt(timeParts[1], 10);
+        if (!isNaN(hours) && !isNaN(minutesPart)) {
+          stats.waktu_masuk.push(hours * 60 + minutesPart);
+        }
+      }
 
       // Collect location accuracy
-      const akurasi = Number.parseFloat(record["Akurasi Lokasi"] || "0") || 0
-      if (akurasi > 0) stats.akurasi_lokasi.push(akurasi)
+      const akurasiValue = record["Akurasi Lokasi"];
+      if (akurasiValue) {
+          const akurasi = parseFloat(String(akurasiValue));
+          if (!isNaN(akurasi) && akurasi > 0) {
+              stats.akurasi_lokasi.push(akurasi);
+          }
+      }
 
       // Collect unique IPs and devices
       if (record["Alamat IP"]) stats.ip_addresses.add(record["Alamat IP"])
