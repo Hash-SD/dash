@@ -1,8 +1,11 @@
+// Lokasi: dashboard.tsx
+
 "use client";
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { Upload, BarChart3, Users, RefreshCw, Loader2, Trash2 } from 'lucide-react';
 import ClusterAnalysisView from '@/components/cluster-analysis-view';
+import BerandaView from '@/components/beranda-view'; // Impor komponen Beranda
 import { 
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, 
   SidebarGroupLabel, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuButton, 
@@ -54,60 +57,13 @@ export default function DashboardTIKPolda() {
         showStatus("Tidak ada data ditemukan.");
       }
     } catch (error: any) {
-      showStatus(`Gagal memuat data: ${error.message}`);
+      showStatus(`Gagal memuat data: ${error.message}`, 5000);
     } finally {
       setIsLoading(false);
     }
   }, []);
   
   useEffect(() => { loadDataFromSheets(); }, [loadDataFromSheets]);
-
-  const parseAndUpload = useCallback(async (file: File) => {
-    setIsLoading(true);
-    showStatus(`Memproses ${file.name}...`);
-    try {
-      const reader = new FileReader();
-      reader.onload = async (event) => {
-        try {
-          const fileData = event.target?.result;
-          if (!fileData) throw new Error("Tidak bisa membaca file.");
-          const XLSX = require('xlsx');
-          const workbook = XLSX.read(fileData, { type: 'binary' });
-          const sheetName = workbook.SheetNames[0];
-          const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
-          
-          if (jsonData.length === 0) throw new Error("File kosong.");
-
-          showStatus(`Mengunggah ${jsonData.length} baris ke Google Sheets...`);
-          const response = await fetch("/api/sheets", {
-            method: "POST",
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ data: jsonData, appendMode: true }),
-          });
-          
-          const result = await response.json();
-          if (!response.ok) throw new Error(result.error || "Gagal mengunggah.");
-          
-          showStatus("Sinkronisasi berhasil. Memuat ulang data...", 6000);
-          await loadDataFromSheets();
-        } catch (err: any) {
-           showStatus(`Error: ${err.message}`, 6000);
-           setIsLoading(false);
-        }
-      };
-      reader.readAsBinaryString(file);
-    } catch (error: any) {
-      showStatus(`Error: ${error.message}`, 6000);
-      setIsLoading(false);
-    }
-  }, [loadDataFromSheets]);
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.[0]) {
-      parseAndUpload(e.target.files[0]);
-    }
-    if(e.target) e.target.value = ''; // Reset file input
-  };
 
   const PageContent = () => {
     if (isLoading) {
@@ -118,7 +74,7 @@ export default function DashboardTIKPolda() {
     }
     switch (currentPage) {
       case "beranda":
-        return <div>Halaman Beranda</div>; // Anda bisa membuat komponen terpisah untuk ini
+        return <BerandaView data={data} />; // Panggil komponen BerandaView
       case "klaster":
         return <ClusterAnalysisView data={data} />;
       default:
@@ -138,34 +94,13 @@ export default function DashboardTIKPolda() {
             <SidebarMenu>
               {[{ id: "beranda", label: "Beranda", icon: BarChart3 }, { id: "klaster", label: "Analisis Klaster", icon: Users }].map(item => (
                 <SidebarMenuItem key={item.id}>
-                  <SidebarMenuButton onClick={() => setCurrentPage(item.id)} isActive={currentPage === item.id} className="data-[active=true]:bg-white data-[active=true]:text-[#003366] hover:bg-white/90 hover:text-[#003366]">
+                  <SidebarMenuButton onClick={() => setCurrentPage(item.id)} isActive={currentPage === item.id} className="text-white data-[active=true]:bg-white data-[active=true]:text-[#003366] hover:bg-white/90 hover:text-[#003366]">
                     <item.icon className="w-4 h-4" /> <span>{item.label}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
-            <SidebarGroup className="mt-auto">
-              <SidebarGroupLabel>Manajemen Data</SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton onClick={() => loadDataFromSheets()} disabled={isLoading}>
-                      {isLoading ? <Loader2 className="animate-spin"/> : <RefreshCw />}<span>Refresh Data</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton onClick={() => fileInputRef.current?.click()} disabled={isLoading}>
-                      <Upload /><span>Unggah & Tambah</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
           </SidebarContent>
-          <SidebarFooter className="p-4 text-xs">
-            <p>Sumber Data: {fileName}</p>
-            <p>Total Baris: {data.length}</p>
-          </SidebarFooter>
         </Sidebar>
 
         <SidebarInset>
@@ -178,7 +113,7 @@ export default function DashboardTIKPolda() {
             <PageContent />
           </main>
         </SidebarInset>
-        
+
         <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept=".xlsx, .xls, .csv"/>
       </div>
     </SidebarProvider>
