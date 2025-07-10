@@ -26,7 +26,11 @@ export default function ClusterAnalysisView() {
             <h3 className="text-xl font-semibold mb-4">Visualisasi Klaster</h3>
             <ResponsiveContainer width="100%" height={500}>
                 <ScatterChart>
-                    {/* ... Konfigurasi ScatterChart tetap sama ... */}
+                    <CartesianGrid />
+                    <XAxis type="number" dataKey="x" name="Rata-rata Waktu Kedatangan (menit dari tengah malam)" unit=" menit" />
+                    <YAxis type="number" dataKey="y" name="Tingkat Keterlambatan (%)" unit="%" />
+                    <Tooltip cursor={{ strokeDasharray: '3 3' }} />
+                    <Legend />
                     {Array.from({ length: kValue }).map((_, i) => (
                         <Scatter key={`cluster-${i}`} name={CLUSTER_NAMES[i]} data={clusteredData.filter(p => p.cluster === i)} fill={COLORS[i % COLORS.length]} />
                     ))}
