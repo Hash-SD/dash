@@ -1,24 +1,12 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState, useMemo, useCallback, useEffect, useRef } from "react"
-import {
-  PieChart, Pie, Cell, BarChart, Bar, LineChart, Line, XAxis, YAxis,
-  CartesianGrid, Tooltip, Legend, ResponsiveContainer
-} from "recharts"
-import {
-  Upload, Search, Trash2, BarChart3, Users, Clock, AlertTriangle, TrendingUp, RefreshCw, Loader2, ScatterChartIcon as Scatter3D
-} from "lucide-react"
-import { DataStats } from "./components/data-stats"
-import InteractiveMap from "@/components/ui/InteractiveMap"
-import ClusterAnalysisView from "@/components/cluster-analysis-view" // Impor komponen baru
-import 'leaflet/dist/leaflet.css'
-import {
-  Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupLabel, SidebarHeader, SidebarInset,
-  SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger
-} from "@/components/ui/sidebar"
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import { Upload, BarChart3, Users, RefreshCw, Loader2, Trash2 } from 'lucide-react';
+import ClusterAnalysisView from '@/components/cluster-analysis-view';
+import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+// You can add back other page components here as needed.
 
-// Tipe data ini digunakan oleh beberapa komponen
+// Define the core data structure
 interface AttendanceRecord {
   NRP: string;
   Nama: string;
@@ -35,229 +23,174 @@ interface AttendanceRecord {
   Deskripsi: string;
 }
 
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8"];
-
 export default function DashboardTIKPolda() {
   const [currentPage, setCurrentPage] = useState("beranda");
   const [data, setData] = useState<AttendanceRecord[]>([]);
   const [fileName, setFileName] = useState("");
-  const [selectedDate, setSelectedDate] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [sheetsStatus, setSheetsStatus] = useState("");
-  const [isLoadingFromSheets, setIsLoadingFromSheets] = useState(false);
-  const [isUploadingToSheets, setIsUploadingToSheets] = useState(false);
-  const [fadeClass, setFadeClass] = useState("opacity-100");
+  const [statusMessage, setStatusMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const fileReplaceInputRef = useRef<HTMLInputElement>(null);
 
-  const loadDataFromSheets = useCallback(async (showStatus = true) => {
-    if (showStatus) {
-      setIsLoadingFromSheets(true);
-      setSheetsStatus("Memuat data dari Google Sheets...");
-    }
+  const showStatus = (message: string, duration = 4000) => {
+    setStatusMessage(message);
+    setTimeout(() => setStatusMessage(""), duration);
+  };
+
+  const loadDataFromSheets = useCallback(async () => {
+    setIsLoading(true);
+    showStatus("Memuat data dari Google Sheets...");
     try {
       const response = await fetch("/api/sheets");
       if (!response.ok) throw new Error("Gagal mengambil data dari server.");
       const result = await response.json();
+
       if (result.data && result.data.length > 0) {
         setData(result.data);
-        setFileName("Data dari Google Sheets");
-        localStorage.setItem("tikPolda_data", JSON.stringify(result.data));
-        if (showStatus) setSheetsStatus(`Berhasil memuat ${result.data.length} baris data.`);
+        setFileName("Google Sheets");
+        showStatus(`Berhasil memuat ${result.data.length} baris data.`);
       } else {
-        const localData = localStorage.getItem("tikPolda_data");
-        if (localData) {
-          setData(JSON.parse(localData));
-          setFileName("Data dari Penyimpanan Lokal");
-          if (showStatus) setSheetsStatus("Gagal memuat dari Sheets, data lokal ditampilkan.");
-        } else {
-          if (showStatus) setSheetsStatus("Tidak ada data di Google Sheets atau lokal.");
-        }
+        showStatus("Tidak ada data di Google Sheets.", 5000);
       }
     } catch (error: any) {
-      console.error("Error loading data:", error);
-      if (showStatus) setSheetsStatus(`Gagal memuat data: ${error.message}`);
+      showStatus(`Gagal memuat data: ${error.message}`, 5000);
     } finally {
-      if (showStatus) {
-        setIsLoadingFromSheets(false);
-        setTimeout(() => setSheetsStatus(""), 4000);
-      }
+      setIsLoading(false);
     }
   }, []);
-  
-  const parseFileData = useCallback(async (file: File): Promise<AttendanceRecord[]> => {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            try {
-                const fileData = event.target?.result;
-                if (!fileData) return reject(new Error("Gagal membaca data file."));
-                const XLSX = require('xlsx');
-                const workbook = XLSX.read(fileData, { type: 'binary' });
-                const sheetName = workbook.SheetNames[0];
-                const worksheet = workbook.Sheets[sheetName];
-                const jsonData = XLSX.utils.sheet_to_json(worksheet);
-                resolve(jsonData as AttendanceRecord[]);
-            } catch (err) {
-                reject(new Error("Gagal mem-parsing file. Pastikan formatnya benar."));
-            }
-        };
-        reader.onerror = () => reject(new Error("Gagal membaca file."));
-        reader.readAsBinaryString(file);
-    });
-  }, []);
 
-  const handleFileUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>, replace = false) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    const actionText = replace ? "Mengganti" : "Menambahkan";
-    setSheetsStatus(`Memproses file ${file.name}...`);
-    setIsUploadingToSheets(true);
-    try {
-        const newParsedData = await parseFileData(file);
-        if (newParsedData.length === 0) throw new Error("File kosong atau format tidak dapat dibaca.");
-        setSheetsStatus(`${actionText} ${newParsedData.length} data ke Google Sheets...`);
-        const response = await fetch("/api/sheets", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ data: newParsedData, appendMode: !replace }),
-        });
-        const result = await response.json();
-        if (!response.ok) throw new Error(result.error || `Gagal ${actionText.toLowerCase()} data.`);
-        setSheetsStatus(`${result.message || 'Operasi berhasil'}. Memuat ulang data...`);
-        await loadDataFromSheets(false);
-        setSheetsStatus("Data berhasil disinkronkan dengan Google Sheets.");
-    } catch (error: any) {
-        setSheetsStatus(`Terjadi kesalahan: ${error.message}`);
-    } finally {
-        setIsUploadingToSheets(false);
-        if (event.target) event.target.value = "";
-        setTimeout(() => setSheetsStatus(""), 5000);
-    }
-  }, [parseFileData, loadDataFromSheets]);
-
-  useEffect(() => { loadDataFromSheets(); }, [loadDataFromSheets]);
   useEffect(() => {
-    if (data.length > 0 && !selectedDate) {
-      const dates = [...new Set(data.map(d => d["Tanggal Absensi"]).filter(Boolean))];
-      if (dates.length > 0) setSelectedDate(dates[0]);
+    loadDataFromSheets();
+  }, [loadDataFromSheets]);
+
+  const parseAndUpload = useCallback(async (file: File) => {
+    setIsLoading(true);
+    showStatus(`Memproses ${file.name}...`);
+    try {
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        try {
+          const fileData = event.target?.result;
+          if (!fileData) throw new Error("Tidak bisa membaca file.");
+          const XLSX = require('xlsx');
+          const workbook = XLSX.read(fileData, { type: 'binary' });
+          const sheetName = workbook.SheetNames[0];
+          const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+
+          if (jsonData.length === 0) throw new Error("File kosong.");
+
+          showStatus(`Mengunggah ${jsonData.length} baris ke Google Sheets...`);
+          const response = await fetch("/api/sheets", {
+            method: "POST",
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ data: jsonData, appendMode: true }),
+          });
+
+          const result = await response.json();
+          if (!response.ok) throw new Error(result.error || "Gagal mengunggah.");
+
+          showStatus("Sinkronisasi berhasil. Memuat ulang data...", 6000);
+          await loadDataFromSheets();
+        } catch (err: any) {
+           showStatus(`Error: ${err.message}`, 6000);
+           setIsLoading(false);
+        }
+      };
+      reader.readAsBinaryString(file);
+    } catch (error: any) {
+      showStatus(`Error: ${error.message}`, 6000);
+      setIsLoading(false);
     }
-  }, [data, selectedDate]);
+  }, [loadDataFromSheets]);
 
-  const handlePageChange = useCallback((page: string) => {
-    setFadeClass("opacity-0");
-    setTimeout(() => {
-      setCurrentPage(page);
-      setFadeClass("opacity-100");
-    }, 250);
-  }, []);
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.[0]) {
+      parseAndUpload(e.target.files[0]);
+    }
+    e.target.value = ''; // Reset file input
+  };
 
-  const filteredData = useMemo(() => {
-    if (!selectedDate) return data;
-    return data.filter(record => record["Tanggal Absensi"] === selectedDate);
-  }, [data, selectedDate]);
+  const clearLocalData = () => {
+    if(confirm("Anda yakin ingin menghapus data yang tersimpan di browser? Ini tidak akan menghapus data di Google Sheets.")) {
+      localStorage.removeItem("tikPolda_data");
+      setData([]);
+      setFileName("Data Dihapus");
+      showStatus("Data lokal berhasil dihapus.");
+    }
+  };
 
-  const kpis = useMemo(() => {
-    const total = filteredData.length;
-    const hadir = filteredData.filter(r => r.Status === "Hadir" || r.Status === "Tepat Waktu").length;
-    const terlambat = filteredData.filter(r => r.Status === "Terlambat").length;
-    return {
-      total,
-      hadir,
-      terlambat,
-      hadirRate: total > 0 ? ((hadir / total) * 100).toFixed(1) : "0",
-    };
-  }, [filteredData]);
+  const PageContent = () => {
+    if (isLoading && data.length === 0) {
+      return <div className="flex justify-center items-center h-full"><Loader2 className="w-12 h-12 animate-spin text-blue-600"/></div>
+    }
+    switch (currentPage) {
+      case "beranda":
+        return <div>Halaman Beranda</div>; // Ganti dengan komponen Beranda Anda
+      case "klaster":
+        return <ClusterAnalysisView data={data} />;
+      default:
+        return <div>Pilih halaman</div>;
+    }
+  };
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen bg-gray-50 flex">
-        <Sidebar className="w-64 bg-[#003366] text-white">
-          <SidebarHeader>
-            <div className="flex items-center space-x-3 p-4">
-              <img src="https://cdn-1.timesmedia.co.id/images/2022/03/24/tik-polri.jpg" alt="Logo" className="h-12 w-12 object-contain" />
-              <h1 className="text-lg font-bold text-white">Dashboard TIK</h1>
-            </div>
+      <div className="min-h-screen bg-gray-100 flex">
+        <Sidebar className="bg-[#003366] text-white">
+          <SidebarHeader className="p-4 flex items-center gap-3">
+            <img src="https://cdn-1.timesmedia.co.id/images/2022/03/24/tik-polri.jpg" alt="Logo" className="h-10 w-10"/>
+            <h1 className="font-bold text-lg">Dashboard TIK</h1>
           </SidebarHeader>
           <SidebarContent>
             <SidebarMenu>
-              {[
-                { id: "beranda", label: "Beranda", icon: BarChart3 },
-                { id: "klaster", label: "Analisis Klaster", icon: Scatter3D },
-              ].map(({ id, label, icon: Icon }) => (
-                <SidebarMenuItem key={id}>
-                  <SidebarMenuButton onClick={() => handlePageChange(id)} isActive={currentPage === id} className="w-full justify-start data-[active=true]:bg-white data-[active=true]:text-[#003366] hover:bg-white/90 hover:text-[#003366]">
-                    <Icon className="w-4 h-4" />
-                    <span>{label}</span>
+              {[{ id: "beranda", label: "Beranda", icon: BarChart3 }, { id: "klaster", label: "Analisis Klaster", icon: Users }].map(item => (
+                <SidebarMenuItem key={item.id}>
+                  <SidebarMenuButton onClick={() => setCurrentPage(item.id)} isActive={currentPage === item.id} className="data-[active=true]:bg-white data-[active=true]:text-[#003366] hover:bg-white/90 hover:text-[#003366]">
+                    <item.icon className="w-4 h-4" /> <span>{item.label}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
-             <SidebarGroup>
+            <SidebarGroup className="mt-auto">
               <SidebarGroupLabel>Manajemen Data</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton onClick={() => loadDataFromSheets()} disabled={isLoading}>
+                      {isLoading ? <Loader2 className="animate-spin"/> : <RefreshCw />}<span>Refresh Data</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton onClick={() => fileInputRef.current?.click()} disabled={isLoading}>
+                      <Upload /><span>Unggah & Tambah</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
                    <SidebarMenuItem>
-                    <SidebarMenuButton onClick={() => loadDataFromSheets()} disabled={isLoadingFromSheets || isUploadingToSheets}>
-                      {isLoadingFromSheets ? <Loader2 className="animate-spin" /> : <RefreshCw />}
-                      <span>Refresh Data</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton onClick={() => fileInputRef.current?.click()} disabled={isUploadingToSheets}>
-                      <Upload /> <span>Tambah Data</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton onClick={() => fileReplaceInputRef.current?.click()} disabled={isUploadingToSheets}>
-                     <Upload /> <span>Ganti Data</span>
+                    <SidebarMenuButton onClick={clearLocalData} className="text-red-300 hover:bg-red-600 hover:text-white">
+                      <Trash2 /><span>Hapus Data Lokal</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
           </SidebarContent>
-           <SidebarFooter className="border-t border-white/20 p-4 text-xs text-white/80">
-            <p>Sumber: {fileName || "Belum ada data"}</p>
-            <p>Total Baris: {data.length}</p>
+          <SidebarFooter className="p-4 text-xs">
+            <p>Data Source: {fileName}</p>
+            <p>Records: {data.length}</p>
           </SidebarFooter>
         </Sidebar>
 
-        <SidebarInset className="flex-1 flex flex-col">
-          <header className="sticky top-0 z-10 bg-white shadow-sm border-b h-16 flex items-center px-6">
-            <SidebarTrigger className="mr-4" />
-            <h2 className="text-xl font-semibold text-gray-800 capitalize">{currentPage}</h2>
+        <SidebarInset>
+          <header className="bg-white shadow-sm h-16 flex items-center px-6">
+            <SidebarTrigger className="md:hidden mr-4"/>
+            <h2 className="text-xl font-semibold capitalize">{currentPage}</h2>
           </header>
-
-          {sheetsStatus && (
-            <div className="m-4 p-3 bg-blue-100 border border-blue-300 text-blue-800 rounded-lg shadow-sm">
-              <p>{sheetsStatus}</p>
-            </div>
-          )}
-
-          <main className={`flex-1 p-6 transition-opacity duration-300 ${fadeClass}`}>
-            {currentPage === "beranda" && (
-              <div className="space-y-6">
-                <DataStats data={data} fileName={fileName} />
-                <div className="bg-white p-6 rounded-lg shadow-md">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Peta Sebaran Absensi</h3>
-                  {data.length > 0 ? (
-                    <InteractiveMap records={filteredData} selectedDate={selectedDate} />
-                  ) : <p className="text-gray-500">Tidak ada data lokasi.</p>}
-                </div>
-                {/* Visualisasi data lainnya untuk halaman Beranda */}
-              </div>
-            )}
-            {currentPage === "klaster" && <ClusterAnalysisView data={data} />}
+          {statusMessage && <div className="m-4 p-3 bg-blue-100 text-blue-800 rounded-lg">{statusMessage}</div>}
+          <main className="p-6 flex-1">
+            <PageContent />
           </main>
-
-          <footer className="bg-gray-100 text-gray-600 h-12 flex items-center justify-center px-6 border-t">
-            <p className="text-sm">© 2025 Divisi TIK Kepolisian Daerah</p>
-          </footer>
         </SidebarInset>
 
-        <input ref={fileInputRef} type="file" accept=".csv, .xls, .xlsx" onChange={(e) => handleFileUpload(e, false)} className="hidden" />
-        <input ref={fileReplaceInputRef} type="file" accept=".csv, .xls, .xlsx" onChange={(e) => handleFileUpload(e, true)} className="hidden" />
+        <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept=".xlsx, .xls, .csv"/>
       </div>
     </SidebarProvider>
   );
