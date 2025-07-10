@@ -38,7 +38,7 @@ export const DashboardDataProvider = ({ children, data }: { children: React.Reac
     const hadir = data.filter(r => r.Status === "Hadir" || r.Status === "Tepat Waktu").length;
     const terlambat = data.filter(r => r.Status === "Terlambat").length;
     const izin = data.filter(r => r.Status === "Izin").length;
-
+    
     const statusData = [
         { name: "Hadir", value: hadir },
         { name: "Terlambat", value: terlambat },
@@ -95,7 +95,7 @@ export const DashboardDataProvider = ({ children, data }: { children: React.Reac
   }, [personnelFeatures, kValue]);
 
   // Menggabungkan hasil klaster dengan data asli
-  const clusteredData = useMemo(() =>
+  const clusteredData = useMemo(() => 
     personnelFeatures.map((pf, index) => ({
       ...pf,
       cluster: clusterLabels[index],
