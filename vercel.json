@@ -1,0 +1,13 @@
+{
+  "functions": {
+    "api/kmeans/index.py": {
+      "runtime": "vercel-python@3.0.0"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/kmeans",
+      "destination": "/api/kmeans/index.py"
+    }
+  ]
+}
