@@ -1,4 +1,4 @@
-// Lokasi: app/api/kmeans/route.ts
+// File Location: app/api/kmeans/route.ts
 
 import { type NextRequest, NextResponse } from "next/server";
 import { kmeans } from "ml-kmeans";
@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { features, k } = body;
 
-    // Validasi input
+    // Robust input validation
     if (!Array.isArray(features) || features.length < k) {
       return NextResponse.json(
         { error: "Data tidak valid atau jumlah data kurang dari nilai K." },
@@ -16,10 +16,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Menjalankan K-Means menggunakan pustaka JavaScript
     const result = kmeans(features, k, { initialization: "kmeans++" });
 
-    // Mengubah format hasil agar sesuai dengan yang diharapkan frontend
     const response = {
       cluster_labels: result.clusters,
       cluster_centers: result.centroids.map(c => c.centroid),
@@ -28,7 +26,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(response, { status: 200 });
 
   } catch (error: any) {
-    console.error("Error di K-Means API (JavaScript):", error);
+    console.error("Error in K-Means API (JavaScript):", error);
     return NextResponse.json(
       { error: "Terjadi kesalahan internal pada server.", details: error.message },
       { status: 500 }
