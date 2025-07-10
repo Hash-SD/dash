@@ -1,151 +1,102 @@
 "use client";
 
-import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { Upload, BarChart3, Users, RefreshCw, Loader2 } from 'lucide-react';
-import { DashboardDataProvider } from '@/app/contexts/DashboardDataProvider'; // <- Impor Provider
-import BerandaView from '@/components/beranda-view';
-import ClusterAnalysisView from '@/components/cluster-analysis-view';
-import {
-  Sidebar, SidebarContent, SidebarHeader, SidebarInset, SidebarMenu,
-  SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger
-} from "@/components/ui/sidebar";
+// VERIFIED: All necessary React Hooks are imported.
+import React, { useMemo, useState, useEffect } from 'react';
+import { PieChart, Pie, Cell, BarChart, Bar, ResponsiveContainer, Tooltip, Legend, CartesianGrid, XAxis, YAxis } from 'recharts';
+import { Users, Calendar, TrendingUp, FileText } from 'lucide-react';
+import InteractiveMap from "@/components/ui/InteractiveMap";
 
-export default function DashboardTIKPolda() {
-  const [currentPage, setCurrentPage] = useState("beranda");
-  const [data, setData] = useState<any[]>([]);
-  const [isLoadingData, setIsLoadingData] = useState(true);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+// Define component-specific types
+interface AttendanceRecord {
+  NRP: string;
+  Nama: string;
+  Unit: string;
+  "Tanggal Absensi": string;
+  "Waktu Absensi": string;
+  Status: string;
+  Latitude: string;
+  Longitude: string;
+}
 
-  const loadDataFromSheets = useCallback(async () => {
-    setIsLoadingData(true);
-    try {
-      const response = await fetch('/api/sheets');
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-      }
-      const result = await response.json();
-      setData(result.data);
-    } catch (error) {
-      console.error("Error loading data from Google Sheets:", error);
-      setData([]); // Set data to empty or handle error state appropriately
-    } finally {
-      setIsLoadingData(false);
-    }
-  }, []);
+interface BerandaViewProps {
+  data: AttendanceRecord[];
+}
 
+const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
+
+const StatCard = ({ icon: Icon, label, value }: { icon: React.ElementType, label: string, value: number | string }) => (
+  <div className="bg-white p-4 rounded-lg shadow-sm border flex items-center">
+    <Icon className="w-8 h-8 text-blue-600" />
+    <div className="ml-4">
+      <p className="text-sm font-medium text-gray-600">{label}</p>
+      <p className="text-xl font-bold text-gray-900">{value}</p>
+    </div>
+  </div>
+);
+
+export default function BerandaView({ data }: BerandaViewProps) {
+  const uniqueDates = useMemo(() => [...new Set(data.map(d => d["Tanggal Absensi"]).filter(Boolean))], [data]);
+  const [selectedDate, setSelectedDate] = useState("");
+
+  // This useEffect ensures a default date is selected upon loading
   useEffect(() => {
-    loadDataFromSheets();
-  }, [loadDataFromSheets]);
+    if (uniqueDates.length > 0 && !selectedDate) {
+      setSelectedDate(uniqueDates[0]);
+    }
+  }, [uniqueDates, selectedDate]);
+  
+  const filteredData = useMemo(() => {
+    if (!selectedDate) return data;
+    return data.filter(record => record["Tanggal Absensi"] === selectedDate);
+  }, [data, selectedDate]);
 
-  const PageContent = () => {
-    if (isLoadingData) {
-      return <div className="flex justify-center items-center h-full"><Loader2 className="w-12 h-12 animate-spin"/></div>;
-    }
-    if (!data || data.length === 0) {
-      return (
-        <div className="flex flex-col items-center justify-center h-full text-center">
-          <p className="text-xl text-gray-600 mb-4">Tidak ada data untuk ditampilkan.</p>
-          <p className="text-md text-gray-500">
-            Silakan coba muat ulang data atau pastikan Google Sheet Anda memiliki data.
-          </p>
-        </div>
-      );
-    }
-    return (
-      <DashboardDataProvider data={data}>
-        {currentPage === 'beranda' && <BerandaView />}
-        {currentPage === 'klaster' && <ClusterAnalysisView />}
-      </DashboardDataProvider>
-    );
-  };
+  const kpis = useMemo(() => {
+      const total = filteredData.length;
+      const hadir = filteredData.filter(r => r.Status === "Hadir" || r.Status === "Tepat Waktu").length;
+      const terlambat = filteredData.filter(r => r.Status === "Terlambat").length;
+      const izin = filteredData.filter(r => r.Status === "Izin").length;
+      return { total, hadir, terlambat, izin, hadirRate: total > 0 ? `${((hadir / total) * 100).toFixed(1)}%` : "0%" };
+  }, [filteredData]);
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setIsLoadingData(true);
-      const formData = new FormData();
-      formData.append('file', file);
-      try {
-        const response = await fetch('/api/data', { method: 'POST', body: formData });
-        if (!response.ok) throw new Error('Upload failed');
-        const result = await response.json();
-        setData(result.data);
-      } catch (error) {
-        console.error("Error uploading file:", error);
-      } finally {
-        setIsLoadingData(false);
-        if (fileInputRef.current) {
-          fileInputRef.current.value = "";
-        }
-      }
-    }
-  };
+  const statusChartData = useMemo(() => [
+      { name: "Hadir", value: kpis.hadir },
+      { name: "Terlambat", value: kpis.terlambat },
+      { name: "Izin", value: kpis.izin },
+  ].filter(item => item.value > 0), [kpis]);
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen bg-gray-100 flex">
-        <Sidebar className="bg-gray-800 text-white w-64 space-y-6 py-7 px-2 fixed h-full">
-          <SidebarHeader className="text-2xl font-semibold text-center">
-            Dashboard TIK
-          </SidebarHeader>
-          <SidebarContent>
-            <SidebarMenu>
-              <SidebarMenuItem
-                onClick={() => setCurrentPage('beranda')}
-                isActive={currentPage === 'beranda'}
-                icon={<BarChart3 size={20} />}
-              >
-                Beranda
-              </SidebarMenuItem>
-              <SidebarMenuItem
-                onClick={() => setCurrentPage('klaster')}
-                isActive={currentPage === 'klaster'}
-                icon={<Users size={20} />}
-              >
-                Analisis Klaster
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarContent>
-          <SidebarTrigger className="lg:hidden" />
-        </Sidebar>
-
-        <SidebarInset className="flex-1 flex flex-col ml-64"> {/* ml-64 untuk memberi ruang bagi sidebar */}
-          <header className="bg-white shadow p-4 flex justify-between items-center">
-            <h2 className="text-xl font-semibold">
-              {currentPage === 'beranda' ? 'Ringkasan Data Presensi' : 'Analisis Klaster Personel'}
-            </h2>
-            <div className="flex items-center space-x-2">
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleFileUpload}
-                className="hidden"
-                accept=".csv,.xlsx,.xls"
-              />
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded inline-flex items-center"
-                title="Upload Data Excel/CSV"
-              >
-                <Upload size={20} className="mr-2"/> Upload Data
-              </button>
-              <button
-                onClick={loadDataFromSheets}
-                disabled={isLoadingData}
-                className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded inline-flex items-center"
-                title="Muat Ulang Data dari Google Sheets"
-              >
-                {isLoadingData && currentPage === "beranda" ? <Loader2 size={20} className="mr-2 animate-spin"/> : <RefreshCw size={20} className="mr-2"/>}
-                Muat Ulang
-              </button>
-            </div>
-          </header>
-          <main className="p-6 flex-1">
-            <PageContent />
-          </main>
-        </SidebarInset>
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard icon={FileText} label="Total Records" value={data.length} />
+        <StatCard icon={Users} label="Personel Hadir" value={kpis.hadir} />
+        <StatCard icon={Calendar} label="Tingkat Hadir" value={kpis.hadirRate} />
+        <StatCard icon={TrendingUp} label="Total Terlambat" value={kpis.terlambat} />
       </div>
-    </SidebarProvider>
+      
+      <div className="bg-white p-4 rounded-lg shadow-sm">
+        <label htmlFor="dateFilter" className="font-medium mr-3">Filter Tanggal:</label>
+        <select id="dateFilter" value={selectedDate} onChange={e => setSelectedDate(e.target.value)} className="border-gray-300 rounded-md">
+          {uniqueDates.map(date => <option key={date} value={date}>{date}</option>)}
+        </select>
+      </div>
+
+      <div className="bg-white p-6 rounded-lg shadow-md">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Peta Sebaran Absensi</h3>
+        <InteractiveMap records={filteredData} selectedDate={selectedDate} />
+      </div>
+
+      <div className="bg-white p-6 rounded-lg shadow-md">
+        <h3 className="text-lg font-semibold mb-4">Distribusi Status Kehadiran</h3>
+        <ResponsiveContainer width="100%" height={300}>
+          <PieChart>
+            <Pie data={statusChartData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label>
+              {statusChartData.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
+            </Pie>
+            <Tooltip />
+            <Legend />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
   );
 }
