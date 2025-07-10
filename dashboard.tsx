@@ -117,6 +117,7 @@ export default function DashboardTIKPolda() {
   const fileReplaceInputRef = useRef<HTMLInputElement>(null)
   const [isUploadingToSheets, setIsUploadingToSheets] = useState(false) // Ini mungkin perlu diintegrasikan atau tetap terpisah jika spesifik untuk UI upload
   // const [sheetsStatus, setSheetsStatus] = useState("") // Akan digantikan sebagian oleh dashboardState.error atau status UI spesifik
+  const [sheetsStatus, setSheetsStatus] = useState("") // Tetap digunakan untuk pesan status spesifik unggahan
   // const [isLoadingFromSheets, setIsLoadingFromSheets] = useState(false) // Diganti oleh dashboardState.status
 
   // State tunggal untuk data utama dasbor
@@ -248,147 +249,54 @@ export default function DashboardTIKPolda() {
   // parseFileData sekarang diimpor dari lib/dataProcessor
   // const parseFileData = useCallback(async (file: File): Promise<AttendanceRecord[]> => { ... }); // Dihapus
 
-  const handleFileUpload = useCallback(
-    async (event: React.ChangeEvent<HTMLInputElement>) => {
-      const file = event.target.files?.[0];
-      if (!file) return;
+  const handleFileUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>, replace = false) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
 
-      // setSheetsStatus(`🔄 Memproses file ${file.name}...`); // Akan diganti dengan state UI yang lebih spesifik jika perlu
-      try {
-        const newParsedData = await parseFileData(file); // Menggunakan parseFileData dari utilitas
+    const actionText = replace ? "Mengganti" : "Menambahkan";
+    setSheetsStatus(`Memproses file ${file.name}...`);
+    setIsUploadingToSheets(true);
 
+    try {
+        const newParsedData = await parseFileData(file);
         if (newParsedData.length === 0) {
-          // setSheetsStatus("❌ File kosong atau format tidak valid setelah parsing.");
-          // setTimeout(() => setSheetsStatus(""), 3000);
-          alert("File kosong atau format tidak valid setelah parsing."); // Contoh notifikasi sederhana
-          if (fileInputRef.current) fileInputRef.current.value = ""; 
-          return;
+            throw new Error("File kosong atau format tidak dapat dibaca.");
         }
-        
-        // setSheetsStatus("✅ File berhasil diproses. Memeriksa data di Google Sheets...");
-        setIsUploadingToSheets(true); // State ini masih dipertahankan untuk UI spesifik upload
-        // setSheetsStatus("🔄 Memuat data terbaru dari Google Sheets...") // Pesan UI spesifik upload
 
-        try {
-          await loadDataFromSheets(false)
-          const currentData = dashboardState.data // Menggunakan dashboardState.data yang sudah ada
+        setSheetsStatus(`${actionText} ${newParsedData.length} data ke Google Sheets...`);
 
-          const existingKeys = new Set(
-            currentData.map((record) => `${record.NRP || ""}_${record["Tanggal Absensi"] || ""}`),
-          )
-
-          const uniqueNewData = newParsedData.filter((record) => {
-            const key = `${record.NRP || ""}_${record["Tanggal Absensi"] || ""}`
-            return !existingKeys.has(key)
-          })
-
-          if (uniqueNewData.length === 0) {
-            // setSheetsStatus("⚠️ Semua data sudah ada di spreadsheet (tidak ada data baru)")
-            // setTimeout(() => setSheetsStatus(""), 3000)
-            alert("Semua data dari file ini sudah ada di spreadsheet.");
-            if (fileInputRef.current) fileInputRef.current.value = ""; // Reset input setelah notifikasi
-            return
-          }
-
-          // setSheetsStatus(`📤 Menambahkan ${uniqueNewData.length} record baru ke Google Sheets...`)
-          const response = await fetch("/api/sheets", {
+        const response = await fetch("/api/sheets", {
             method: "POST",
-            headers: { "Content-Type": "application/json", },
-            body: JSON.stringify({ data: uniqueNewData, fileName: file.name, appendMode: true, }),
-          })
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                data: newParsedData,
+                appendMode: !replace, // Jika replace false, maka appendMode true
+            }),
+        });
 
-          if (response.ok) {
-            const result = await response.json()
-            await loadDataFromSheets(false) // Reload untuk mendapatkan state terbaru
-            // setSheetsStatus(`✅ ${result.message} (${uniqueNewData.length} record baru ditambahkan)`)
-            alert(`${result.message} (${uniqueNewData.length} record baru ditambahkan)`);
-            setDashboardState(prev => ({...prev, fileName: `Google Sheets Data + ${file.name}`}))
-          } else {
-            // setSheetsStatus("❌ Gagal menambahkan data ke Google Sheets")
-             const errorResult = await response.json().catch(() => ({ error: "Gagal menambahkan data ke Google Sheets" }));
-            alert(errorResult.error || "Gagal menambahkan data ke Google Sheets");
-          }
-        } catch (error) {
-          console.error("Error uploading to Google Sheets:", error)
-          // setSheetsStatus("❌ Terjadi kesalahan saat mengunggah data")
-          alert("Terjadi kesalahan saat mengunggah data ke Google Sheets");
-        } finally {
-          setIsUploadingToSheets(false);
-          // setTimeout(() => setSheetsStatus(""), 5000);
-          if (fileInputRef.current) fileInputRef.current.value = ""; 
+        const result = await response.json();
+        if (!response.ok) {
+            throw new Error(result.error || `Gagal ${actionText.toLowerCase()} data.`);
         }
-      } catch (uploadError) {
-        console.error("Error during file upload process:", uploadError);
-        // setSheetsStatus(`❌ Terjadi kesalahan: ${uploadError instanceof Error ? uploadError.message : 'Error tidak diketahui'}`);
-        alert(`Error selama proses unggah file: ${uploadError instanceof Error ? uploadError.message : 'Error tidak diketahui'}`);
+
+        setSheetsStatus(`${result.message || 'Operasi berhasil'}. Memuat ulang data...`);
+
+        // Langkah paling penting: Muat ulang data dari Google Sheets setelah berhasil.
+        await loadDataFromSheets(false); // false agar tidak menampilkan status loading ganda
+
+        setSheetsStatus(`Data berhasil disinkronkan dengan Google Sheets.`);
+
+    } catch (error: any) {
+        console.error(`Error pada proses unggah (${actionText}):`, error);
+        setSheetsStatus(`Terjadi kesalahan: ${error.message}`);
+    } finally {
         setIsUploadingToSheets(false);
-        // setTimeout(() => setSheetsStatus(""), 5000);
-        if (fileInputRef.current) fileInputRef.current.value = ""; 
-      }
-    },
-    [loadDataFromSheets, dashboardState.data],  // Menggunakan dashboardState.data sebagai dependensi
-  )
+        // Reset input file agar bisa mengunggah file yang sama lagi
+        if (event.target) event.target.value = "";
+        setTimeout(() => setSheetsStatus(""), 5000);
+    }
+  }, [parseFileData, loadDataFromSheets]); // Tambahkan dependensi yang benar
 
-  // Replace mode - completely replace data in sheets
-  const handleFileReplace = useCallback(
-    async (event: React.ChangeEvent<HTMLInputElement>) => {
-      const file = event.target.files?.[0];
-      if (!file) return;
-
-      // setSheetsStatus(`🔄 Memproses file ${file.name} untuk mengganti data...`);
-      try {
-        const parsedData = await parseFileData(file); // Menggunakan parseFileData dari utilitas
-
-        if (parsedData.length === 0) {
-          // setSheetsStatus("❌ File kosong atau format tidak valid setelah parsing.");
-          // setTimeout(() => setSheetsStatus(""), 3000);
-           alert("File kosong atau format tidak valid setelah parsing.");
-          if (fileReplaceInputRef.current) fileReplaceInputRef.current.value = ""; 
-          return;
-        }
-        
-        // setSheetsStatus("✅ File berhasil diproses. Mengganti data di Google Sheets...");
-        setIsUploadingToSheets(true);
-        // setSheetsStatus("🔄 Mengganti semua data di Google Sheets...")
-
-        try {
-          const response = await fetch("/api/sheets", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", },
-            body: JSON.stringify({ data: parsedData, fileName: file.name, appendMode: false, }),
-          })
-
-          if (response.ok) {
-            const result = await response.json()
-            await loadDataFromSheets(false)
-            // setSheetsStatus(`✅ ${result.message}`)
-            alert(result.message);
-            setDashboardState(prev => ({...prev, fileName: file.name}))
-          } else {
-            // setSheetsStatus("❌ Gagal mengganti data di Google Sheets")
-            const errorResult = await response.json().catch(() => ({ error: "Gagal mengganti data di Google Sheets" }));
-            alert(errorResult.error || "Gagal mengganti data di Google Sheets");
-          }
-        } catch (error) {
-          console.error("Error uploading to Google Sheets:", error)
-          // setSheetsStatus("❌ Terjadi kesalahan saat mengganti data")
-          alert("Terjadi kesalahan saat mengganti data di Google Sheets");
-        } finally {
-          setIsUploadingToSheets(false);
-          // setTimeout(() => setSheetsStatus(""), 3000);
-          if (fileReplaceInputRef.current) fileReplaceInputRef.current.value = "";
-        }
-      } catch (uploadError) {
-        console.error("Error during file replace process:", uploadError);
-        // setSheetsStatus(`❌ Terjadi kesalahan: ${uploadError instanceof Error ? uploadError.message : 'Error tidak diketahui'}`);
-        alert(`Error selama proses penggantian file: ${uploadError instanceof Error ? uploadError.message : 'Error tidak diketahui'}`);
-        setIsUploadingToSheets(false);
-        // setTimeout(() => setSheetsStatus(""), 5000);
-        if (fileReplaceInputRef.current) fileReplaceInputRef.current.value = "";
-      }
-    },
-    [loadDataFromSheets], 
-  )
 
   const handleClearData = useCallback(() => {
     if (confirm("Apakah Anda yakin ingin menghapus semua data lokal? Data di Google Sheets tidak akan terpengaruh.")) {
@@ -1134,15 +1042,15 @@ export default function DashboardTIKPolda() {
           <input 
             ref={fileInputRef} 
             type="file" 
-            accept=".csv, .xls, .xlsx, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" 
-            onChange={handleFileUpload} 
+            accept=".csv, .xls, .xlsx"
+            onChange={(e) => handleFileUpload(e, false)} // mode tambah
             className="hidden" 
           />
           <input 
             ref={fileReplaceInputRef} 
             type="file" 
-            accept=".csv, .xls, .xlsx, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" 
-            onChange={handleFileReplace} 
+            accept=".csv, .xls, .xlsx"
+            onChange={(e) => handleFileUpload(e, true)} // mode ganti
             className="hidden" 
           />
         </SidebarInset>
