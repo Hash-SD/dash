@@ -23,6 +23,11 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
+  RadarChart,
+  Radar,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
 } from "recharts"
 import {
   Upload,
@@ -1422,18 +1427,6 @@ export default function DashboardTIKPolda() {
                         <div className="bg-white p-6 rounded-lg shadow-md">
                             <h3 className="text-lg font-semibold text-gray-900 mb-4">Karakteristik Rata-rata Klaster</h3>
                             <ResponsiveContainer width="100%" height={300}>
-                                    {/* This Radar setup is incorrect for comparing clusters.
-                                        The `data` prop of RadarChart should be an array of objects,
-                                        where each object represents a point on the angle axis (a metric).
-                                        Each object should then have keys for each cluster.
-                                        Example:
-                                        [
-                                          { metric: 'Total Hadir', Klaster1: 10, Klaster2: 12, Klaster3: 8, fullMark: 15 },
-                                          { metric: 'Keterlambatan', Klaster1: 2, Klaster2: 1, Klaster3: 5, fullMark: 5 },
-                                          ...
-                                        ]
-                                    */}
-                                    {/* Correct Radar Implementation */}
                                     {(() => {
                                         const metrics = [
                                             { key: 'avgTotalHadir', name: 'Avg Hadir', max: 0},
