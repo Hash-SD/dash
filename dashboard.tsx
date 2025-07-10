@@ -84,7 +84,7 @@ export default function DashboardTIKPolda() {
       }
     }
   }, []);
-
+  
   const parseFileData = useCallback(async (file: File): Promise<AttendanceRecord[]> => {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
