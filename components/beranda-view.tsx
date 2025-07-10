@@ -2,10 +2,15 @@
 
 "use client";
 
-import React, { useMemo, useState, useEffect } from 'react';
-import { PieChart, Pie, Cell, BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Users, Calendar, TrendingUp, FileText } from 'lucide-react';
-import InteractiveMap from "@/components/ui/InteractiveMap";
+import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { Upload, BarChart3, Users, RefreshCw, Loader2, Trash2 } from 'lucide-react';
+import ClusterAnalysisView from '@/components/cluster-analysis-view';
+import BerandaView from '@/components/beranda-view';
+import { 
+  Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, 
+  SidebarGroupLabel, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuButton, 
+  SidebarMenuItem, SidebarProvider, SidebarTrigger 
+} from "@/components/ui/sidebar";
 
 // Tipe data yang dibutuhkan oleh komponen ini
 interface AttendanceRecord {
