@@ -23,7 +23,6 @@ class handler(BaseHTTPRequestHandler):
                 self.wfile.write(json.dumps({"error": "Input 'features' dan 'k' diperlukan"}).encode('utf-8'))
                 return
 
-            # Jalankan fungsi K-Means dari skrip Anda
             result = run_kmeans(features, k)
 
             if result:
