@@ -58,6 +58,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
+import { Skeleton } from "@/components/ui/skeleton"
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8"]
 
@@ -1026,8 +1027,11 @@ export default function DashboardTIKPolda() {
             </div>
           </SidebarHeader>
 
-          <SidebarContent>
+          <SidebarContent className="px-2">
             <SidebarGroup>
+              <SidebarGroupLabel className="text-white/80 font-medium px-2 py-2">
+                Navigasi
+              </SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
                   {[
@@ -1040,8 +1044,8 @@ export default function DashboardTIKPolda() {
                       <SidebarMenuButton
                         onClick={() => handlePageChange(id)}
                         isActive={currentPage === id}
-                        className={`w-full justify-start text-white hover:bg-white hover:text-[#003366] ${
-                          currentPage === id ? "bg-white text-[#003366]" : ""
+                        className={`w-full justify-start text-white/90 hover:bg-white/10 hover:text-white rounded-lg mx-1 transition-all duration-200 ${
+                          currentPage === id ? "bg-white text-primary font-medium shadow-sm" : ""
                         }`}
                       >
                         <Icon className="w-4 h-4" />
@@ -1054,13 +1058,16 @@ export default function DashboardTIKPolda() {
             </SidebarGroup>
 
             <SidebarGroup>
+              <SidebarGroupLabel className="text-white/80 font-medium px-2 py-2">
+                Manajemen Data
+              </SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
                   <SidebarMenuItem>
                     <SidebarMenuButton
                       onClick={() => loadDataFromSheets(true)}
                       disabled={isLoadingFromSheets}
-                      className="w-full justify-start text-white hover:bg-white hover:text-[#003366]"
+                      className="w-full justify-start text-white/90 hover:bg-white/10 hover:text-white rounded-lg mx-1 transition-all duration-200 disabled:opacity-50"
                     >
                       {isLoadingFromSheets ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -1075,12 +1082,12 @@ export default function DashboardTIKPolda() {
                     <SidebarMenuButton
                       onClick={() => fileInputRef.current?.click()}
                       disabled={isUploadingToSheets}
-                      className="w-full justify-start text-white hover:bg-white hover:text-[#003366]"
+                      className="w-full justify-start text-white/90 hover:bg-white/10 hover:text-white rounded-lg mx-1 transition-all duration-200 disabled:opacity-50"
                     >
                       {isUploadingToSheets ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
                       ) : (
-                        <Upload className="w-4 h-4" />
+                        <Plus className="w-4 h-4" />
                       )}
                       <span>Tambah Data</span>
                     </SidebarMenuButton>
@@ -1090,7 +1097,7 @@ export default function DashboardTIKPolda() {
                     <SidebarMenuButton
                       onClick={() => fileReplaceInputRef.current?.click()}
                       disabled={isUploadingToSheets}
-                      className="w-full justify-start text-white hover:bg-white hover:text-[#003366]"
+                      className="w-full justify-start text-white/90 hover:bg-white/10 hover:text-white rounded-lg mx-1 transition-all duration-200 disabled:opacity-50"
                     >
                       {isUploadingToSheets ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -1105,7 +1112,7 @@ export default function DashboardTIKPolda() {
                     <SidebarMenuButton
                       onClick={uploadToSheets}
                       disabled={isUploadingToSheets || data.length === 0}
-                      className="w-full justify-start text-white hover:bg-white hover:text-[#003366]"
+                      className="w-full justify-start text-white/90 hover:bg-white/10 hover:text-white rounded-lg mx-1 transition-all duration-200 disabled:opacity-50"
                     >
                       {isUploadingToSheets ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -1119,7 +1126,7 @@ export default function DashboardTIKPolda() {
                   <SidebarMenuItem>
                     <SidebarMenuButton
                       onClick={handleClearData}
-                      className="w-full justify-start text-red-300 hover:bg-red-600 hover:text-white"
+                      className="w-full justify-start text-red-200 hover:bg-red-600/20 hover:text-red-100 rounded-lg mx-1 transition-all duration-200 border border-red-500/20"
                     >
                       <Trash2 className="w-4 h-4" />
                       <span>Hapus Data</span>
@@ -1185,7 +1192,7 @@ export default function DashboardTIKPolda() {
 
 
           {/* Page Content */}
-          <main className={`transition-opacity duration-500 ${fadeClass} p-4 flex-1`}>
+          <main className={`transition-opacity duration-500 ${fadeClass} p-8 flex-1 bg-gray-50/50`}>
             {currentPage === "beranda" && (
               <div>
                 {/* File Info */}
@@ -1197,12 +1204,20 @@ export default function DashboardTIKPolda() {
                 </div>
 
                     {/* Interactive Map */}
-                    <div className="mb-8 bg-white p-6 rounded-lg shadow-md">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Peta Sebaran Absensi</h3>
+                    <div className="mb-8 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                      <h3 className="text-lg font-semibold text-foreground mb-4">Peta Sebaran Absensi</h3>
                       { data.length > 0 ? (
                         <InteractiveMap records={filteredData} selectedDate={selectedDate} />
                       ) : (
-                        <p className="text-gray-500">Tidak ada data untuk ditampilkan di peta.</p>
+                        <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
+                          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                            <BarChart3 className="w-8 h-8 text-gray-400" />
+                          </div>
+                          <h4 className="text-lg font-semibold text-foreground mb-2">Peta Tidak Tersedia</h4>
+                          <p className="text-muted-foreground max-w-sm">
+                            Data lokasi absensi belum tersedia. Unggah data yang berisi informasi koordinat untuk melihat peta sebaran.
+                          </p>
+                        </div>
                       )}
                     </div>
 
@@ -1227,51 +1242,89 @@ export default function DashboardTIKPolda() {
                   </div>
                 )}
 
-                {/* KPI Cards with specified colors */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                  <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-[#003366]">
-                    <div className="flex items-center">
-                      <Users className="w-8 h-8 text-[#003366]" />
-                      <div className="ml-4">
-                        <p className="text-sm font-medium text-gray-600">Total Karyawan</p>
-                        <p className="text-2xl font-bold text-gray-900">{kpis.total}</p>
+                {/* KPI Cards - Enhanced Design */}
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
+                  <div className="group bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-blue-100 transition-all duration-200">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-muted-foreground mb-1">Total Personel</p>
+                        <p className="text-3xl font-black text-foreground">{kpis.total}</p>
+                        <p className="text-xs text-muted-foreground mt-1">Karyawan terdaftar</p>
+                      </div>
+                      <div className="flex items-center justify-center w-12 h-12 bg-blue-50 rounded-full group-hover:bg-blue-100 transition-colors">
+                        <Users className="w-6 h-6 text-blue-600" />
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-[#28A745]">
-                    <div className="flex items-center">
-                      <Clock className="w-8 h-8 text-[#28A745]" />
-                      <div className="ml-4">
-                        <p className="text-sm font-medium text-gray-600">Rata-rata Kehadiran (%)</p>
-                        <p className="text-2xl font-bold text-gray-900">{kpis.hadirRate}%</p>
+                  <div className="group bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-green-100 transition-all duration-200">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-muted-foreground mb-1">Tingkat Kehadiran</p>
+                        <p className="text-3xl font-black text-foreground">{kpis.hadirRate}%</p>
+                        <p className="text-xs text-muted-foreground mt-1">Dari total hari kerja</p>
+                      </div>
+                      <div className="flex items-center justify-center w-12 h-12 bg-green-50 rounded-full group-hover:bg-green-100 transition-colors">
+                        <Clock className="w-6 h-6 text-green-600" />
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-[#DC3545]">
-                    <div className="flex items-center">
-                      <AlertTriangle className="w-8 h-8 text-[#DC3545]" />
-                      <div className="ml-4">
-                        <p className="text-sm font-medium text-gray-600">Persentase Keterlambatan (%)</p>
-                        <p className="text-2xl font-bold text-gray-900">{((kpis.terlambat / (kpis.total || 1)) * 100).toFixed(1)}%</p>
+                  <div className="group bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-red-100 transition-all duration-200">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-muted-foreground mb-1">Keterlambatan</p>
+                        <p className="text-3xl font-black text-foreground">{((kpis.terlambat / (kpis.total || 1)) * 100).toFixed(1)}%</p>
+                        <p className="text-xs text-muted-foreground mt-1">{kpis.terlambat} dari {kpis.total} personel</p>
+                      </div>
+                      <div className="flex items-center justify-center w-12 h-12 bg-red-50 rounded-full group-hover:bg-red-100 transition-colors">
+                        <AlertTriangle className="w-6 h-6 text-red-600" />
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-[#FFC107]">
-                    <div className="flex items-center">
-                      <TrendingUp className="w-8 h-8 text-[#FFC107]" />
-                      <div className="ml-4">
-                        <p className="text-sm font-medium text-gray-600">Total Izin/Sakit</p>
-                        <p className="text-2xl font-bold text-gray-900">{kpis.izin}</p>
+                  <div className="group bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-amber-100 transition-all duration-200">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-muted-foreground mb-1">Izin & Sakit</p>
+                        <p className="text-3xl font-black text-foreground">{kpis.izin}</p>
+                        <p className="text-xs text-muted-foreground mt-1">Total perizinan</p>
+                      </div>
+                      <div className="flex items-center justify-center w-12 h-12 bg-amber-50 rounded-full group-hover:bg-amber-100 transition-colors">
+                        <TrendingUp className="w-6 h-6 text-amber-600" />
                       </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Charts */}
-                {data.length > 0 && (
+                {isLoadingFromSheets ? (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                    {/* Status Chart Skeleton */}
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                      <Skeleton className="h-6 w-48 mb-4" />
+                      <div className="flex items-center justify-center h-[300px]">
+                        <div className="space-y-3 text-center">
+                          <Skeleton className="h-32 w-32 rounded-full mx-auto" />
+                          <Skeleton className="h-4 w-24 mx-auto" />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Unit Chart Skeleton */}
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                      <Skeleton className="h-6 w-40 mb-4" />
+                      <div className="h-[300px] space-y-3">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <div key={i} className="flex items-center space-x-3">
+                            <Skeleton className="h-8 w-20" />
+                            <Skeleton className="h-8 flex-1" />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ) : data.length > 0 && (
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
                     {/* Status Pie Chart */}
                     <div className="bg-white p-6 rounded-lg shadow-md">
@@ -1410,12 +1463,37 @@ export default function DashboardTIKPolda() {
                     </div>
                   </div>
                 ) : (
-                  <div className="bg-white p-8 rounded-lg shadow-md text-center">
-                    <div className="text-gray-400 mb-4">
-                      <Table className="w-16 h-16 mx-auto" />
+                  <div className="bg-white p-12 rounded-xl shadow-sm border border-gray-100 text-center">
+                    <div className="max-w-sm mx-auto">
+                      <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <Table className="w-10 h-10 text-gray-400" />
+                      </div>
+                      <h3 className="text-xl font-semibold text-foreground mb-3">Belum Ada Data Absensi</h3>
+                      <p className="text-muted-foreground mb-6 leading-relaxed">
+                        Untuk memulai analisis, silakan unggah file data absensi dalam format CSV atau Excel.
+                      </p>
+                      <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                        <button
+                          onClick={() => fileInputRef.current?.click()}
+                          className="inline-flex items-center justify-center px-6 py-3 bg-primary text-primary-foreground font-medium rounded-lg hover:bg-primary/90 transition-colors"
+                        >
+                          <Upload className="w-4 h-4 mr-2" />
+                          Unggah Data Baru
+                        </button>
+                        <button
+                          onClick={() => loadDataFromSheets(true)}
+                          disabled={isLoadingFromSheets}
+                          className="inline-flex items-center justify-center px-6 py-3 bg-secondary text-secondary-foreground font-medium rounded-lg hover:bg-secondary/80 transition-colors disabled:opacity-50"
+                        >
+                          {isLoadingFromSheets ? (
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          ) : (
+                            <RefreshCw className="w-4 h-4 mr-2" />
+                          )}
+                          Muat dari Sheets
+                        </button>
+                      </div>
                     </div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Belum Ada Data</h3>
-                    <p className="text-gray-600">Silakan unggah data terlebih dahulu untuk melihat tabel.</p>
                   </div>
                 )}
               </div>
@@ -1423,7 +1501,60 @@ export default function DashboardTIKPolda() {
 
             {currentPage === "klaster" && (
               <div>
-                {data.length > 0 && clusterLabels.length > 0 && personnelFeatures.length > 0 ? (
+                {isKmeansLoading ? (
+                  <div className="space-y-6">
+                    {/* K-Means Processing Banner */}
+                    <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 p-6 rounded-xl">
+                      <div className="flex items-center space-x-4">
+                        <div className="flex-shrink-0">
+                          <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="text-lg font-semibold text-purple-900">Memproses Analisis K-Means</h3>
+                          <p className="text-purple-700 mt-1">
+                            Sistem sedang mengelompokkan personel berdasarkan pola absensi. Proses ini membutuhkan beberapa saat...
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Skeleton for Controls */}
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                      <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center space-x-4">
+                          <Skeleton className="h-4 w-32" />
+                          <Skeleton className="h-10 w-20" />
+                        </div>
+                        <Skeleton className="h-10 w-40" />
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {Array.from({ length: 4 }).map((_, i) => (
+                          <div key={i} className="p-4 rounded-lg border border-gray-200">
+                            <Skeleton className="h-5 w-24 mb-2" />
+                            <Skeleton className="h-8 w-16 mb-1" />
+                            <Skeleton className="h-3 w-16" />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Skeleton for Charts */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <Skeleton className="h-6 w-48 mb-4" />
+                        <div className="flex items-center justify-center h-[300px]">
+                          <Skeleton className="h-48 w-48 rounded-full" />
+                        </div>
+                      </div>
+                      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <Skeleton className="h-6 w-56 mb-4" />
+                        <div className="flex items-center justify-center h-[300px]">
+                          <Skeleton className="h-48 w-48 rounded-full" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : data.length > 0 && clusterLabels.length > 0 && personnelFeatures.length > 0 ? (
                   <>
                     {/* K-Means Controls & Summary Cards */}
                     <div className="mb-6 p-4 bg-white rounded-lg shadow-md">
@@ -1838,20 +1969,61 @@ export default function DashboardTIKPolda() {
                     )}
                   </>
                 ) : (
-                  <div className="bg-white p-8 rounded-lg shadow-md text-center">
-                    <div className="text-gray-400 mb-4">
-                      <Scatter3D className="w-16 h-16 mx-auto" />
+                  <div className="bg-white p-12 rounded-xl shadow-sm border border-gray-100 text-center">
+                    <div className="max-w-md mx-auto">
+                      <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <Scatter3D className="w-10 h-10 text-purple-600" />
+                      </div>
+                      <h3 className="text-xl font-semibold text-foreground mb-3">Analisis Klaster Belum Tersedia</h3>
+                      <p className="text-muted-foreground mb-6 leading-relaxed">
+                        {data.length === 0 
+                          ? "Unggah data absensi terlebih dahulu untuk memulai analisis clustering personel."
+                          : "Pastikan data telah diproses dengan benar. Sistem akan otomatis menjalankan algoritma K-Means."
+                        }
+                      </p>
+                      {kmeansError && (
+                        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-left">
+                          <p className="text-red-700 text-sm font-medium">Error K-Means:</p>
+                          <p className="text-red-600 text-sm">{kmeansError}</p>
+                        </div>
+                      )}
+                      {data.length === 0 ? (
+                        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                          <button
+                            onClick={() => fileInputRef.current?.click()}
+                            className="inline-flex items-center justify-center px-6 py-3 bg-primary text-primary-foreground font-medium rounded-lg hover:bg-primary/90 transition-colors"
+                          >
+                            <Upload className="w-4 h-4 mr-2" />
+                            Unggah Data
+                          </button>
+                          <button
+                            onClick={() => loadDataFromSheets(true)}
+                            disabled={isLoadingFromSheets}
+                            className="inline-flex items-center justify-center px-6 py-3 bg-secondary text-secondary-foreground font-medium rounded-lg hover:bg-secondary/80 transition-colors disabled:opacity-50"
+                          >
+                            {isLoadingFromSheets ? (
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            ) : (
+                              <RefreshCw className="w-4 h-4 mr-2" />
+                            )}
+                            Muat dari Sheets
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => loadDataFromSheets(true)}
+                          disabled={isLoadingFromSheets}
+                          className="inline-flex items-center justify-center px-6 py-3 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50"
+                        >
+                          {isLoadingFromSheets ? (
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          ) : (
+                            <RefreshCw className="w-4 h-4 mr-2" />
+                          )}
+                          Coba Ulang Analisis
+                        </button>
+                      )}
                     </div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Belum Ada Data untuk Analisis Klaster</h3>
-                    <p className="text-gray-600 mb-2">
-                      Pastikan data telah diunggah dan proses K-Means (jika ada error) telah berhasil.
-                    </p>
-                    { kmeansError && <p className="text-red-500 text-sm">Error K-Means: {kmeansError}</p>}
-                    { data.length === 0 && 
-                        <p className="text-gray-600 mt-2">
-                            Silakan unggah data terlebih dahulu.
-                        </p>
-                    }
                   </div>
                 )}
               </div>
@@ -1899,12 +2071,20 @@ export default function DashboardTIKPolda() {
                 </div>
 
                 {/* Interactive Map */}
-                <div className="bg-white p-6 rounded-lg shadow-md mb-8">
-                  <h4 className="text-lg font-semibold text-gray-900 mb-4">Peta Interaktif Lokasi Absensi</h4>
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-8">
+                  <h4 className="text-lg font-semibold text-foreground mb-4">Peta Interaktif Lokasi Absensi</h4>
                   {data.length > 0 ? (
                     <InteractiveMap records={filteredData} selectedDate={selectedDate} />
                   ) : (
-                    <p className="text-gray-500">Tidak ada data untuk ditampilkan di peta.</p>
+                    <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
+                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                        <BarChart3 className="w-8 h-8 text-gray-400" />
+                      </div>
+                      <h4 className="text-lg font-semibold text-foreground mb-2">Peta Lokasi Tidak Tersedia</h4>
+                      <p className="text-muted-foreground max-w-sm">
+                        Untuk melihat analisis lokasi, pastikan data absensi mengandung informasi koordinat atau alamat lengkap.
+                      </p>
+                    </div>
                   )}
                 </div>
 
