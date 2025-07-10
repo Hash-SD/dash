@@ -930,7 +930,7 @@ export default function DashboardTIKPolda() {
           <SidebarHeader>
             <div className="flex items-center space-x-3 p-4">
               <img
-                src="https://github.com/Hash-SD/dash/blob/main/tik.png?raw=true"
+                src="https://cdn-1.timesmedia.co.id/images/2022/03/24/tik-polri.jpg"
                 alt="TIK Polda Logo"
                 className="h-[50px] w-[50px] object-contain"
               />
