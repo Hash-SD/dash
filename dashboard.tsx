@@ -1,13 +1,14 @@
 "use client";
 
-import {
+import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { Upload, BarChart3, Users, RefreshCw, Loader2, Trash2 } from 'lucide-react';
+import ClusterAnalysisView from '@/components/cluster-analysis-view';
+import { 
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, 
   SidebarGroupLabel, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuButton, 
-  SidebarMenuItem, SidebarProvider, SidebarTrigger
+  SidebarMenuItem, SidebarProvider, SidebarTrigger 
 } from "@/components/ui/sidebar";
-// You can add back other page components here as needed.
 
-// Define the core data structure
 interface AttendanceRecord {
   NRP: string;
   Nama: string;
@@ -44,24 +45,22 @@ export default function DashboardTIKPolda() {
       const response = await fetch("/api/sheets");
       if (!response.ok) throw new Error("Gagal mengambil data dari server.");
       const result = await response.json();
-
+      
       if (result.data && result.data.length > 0) {
         setData(result.data);
         setFileName("Google Sheets");
         showStatus(`Berhasil memuat ${result.data.length} baris data.`);
       } else {
-        showStatus("Tidak ada data di Google Sheets.", 5000);
+        showStatus("Tidak ada data ditemukan.");
       }
     } catch (error: any) {
-      showStatus(`Gagal memuat data: ${error.message}`, 5000);
+      showStatus(`Gagal memuat data: ${error.message}`);
     } finally {
       setIsLoading(false);
     }
   }, []);
-
-  useEffect(() => {
-    loadDataFromSheets();
-  }, [loadDataFromSheets]);
+  
+  useEffect(() => { loadDataFromSheets(); }, [loadDataFromSheets]);
 
   const parseAndUpload = useCallback(async (file: File) => {
     setIsLoading(true);
@@ -76,7 +75,7 @@ export default function DashboardTIKPolda() {
           const workbook = XLSX.read(fileData, { type: 'binary' });
           const sheetName = workbook.SheetNames[0];
           const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
-
+          
           if (jsonData.length === 0) throw new Error("File kosong.");
 
           showStatus(`Mengunggah ${jsonData.length} baris ke Google Sheets...`);
@@ -85,10 +84,10 @@ export default function DashboardTIKPolda() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ data: jsonData, appendMode: true }),
           });
-
+          
           const result = await response.json();
           if (!response.ok) throw new Error(result.error || "Gagal mengunggah.");
-
+          
           showStatus("Sinkronisasi berhasil. Memuat ulang data...", 6000);
           await loadDataFromSheets();
         } catch (err: any) {
@@ -107,29 +106,23 @@ export default function DashboardTIKPolda() {
     if (e.target.files?.[0]) {
       parseAndUpload(e.target.files[0]);
     }
-    e.target.value = ''; // Reset file input
-  };
-
-  const clearLocalData = () => {
-    if(confirm("Anda yakin ingin menghapus data yang tersimpan di browser? Ini tidak akan menghapus data di Google Sheets.")) {
-      localStorage.removeItem("tikPolda_data");
-      setData([]);
-      setFileName("Data Dihapus");
-      showStatus("Data lokal berhasil dihapus.");
-    }
+    if(e.target) e.target.value = ''; // Reset file input
   };
 
   const PageContent = () => {
-    if (isLoading && data.length === 0) {
+    if (isLoading) {
       return <div className="flex justify-center items-center h-full"><Loader2 className="w-12 h-12 animate-spin text-blue-600"/></div>
+    }
+    if (data.length === 0) {
+       return <div className="text-center p-8 text-gray-500">Data tidak ditemukan. Silakan unggah data untuk memulai.</div>;
     }
     switch (currentPage) {
       case "beranda":
-        return <div>Halaman Beranda</div>; // Ganti dengan komponen Beranda Anda
+        return <div>Halaman Beranda</div>; // Anda bisa membuat komponen terpisah untuk ini
       case "klaster":
         return <ClusterAnalysisView data={data} />;
       default:
-        return <div>Pilih halaman</div>;
+        return <div>Pilih halaman dari menu.</div>;
     }
   };
 
@@ -165,18 +158,13 @@ export default function DashboardTIKPolda() {
                       <Upload /><span>Unggah & Tambah</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
-                   <SidebarMenuItem>
-                    <SidebarMenuButton onClick={clearLocalData} className="text-red-300 hover:bg-red-600 hover:text-white">
-                      <Trash2 /><span>Hapus Data Lokal</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
           </SidebarContent>
           <SidebarFooter className="p-4 text-xs">
-            <p>Data Source: {fileName}</p>
-            <p>Records: {data.length}</p>
+            <p>Sumber Data: {fileName}</p>
+            <p>Total Baris: {data.length}</p>
           </SidebarFooter>
         </Sidebar>
 
@@ -190,7 +178,7 @@ export default function DashboardTIKPolda() {
             <PageContent />
           </main>
         </SidebarInset>
-
+        
         <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept=".xlsx, .xls, .csv"/>
       </div>
     </SidebarProvider>

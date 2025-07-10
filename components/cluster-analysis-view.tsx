@@ -1,9 +1,9 @@
-// File Location: components/cluster-analysis-view.tsx
-
 "use client";
 
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
-import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import {
+  ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
+} from 'recharts';
 import { Loader2 } from 'lucide-react';
 
 // Define necessary types
@@ -14,9 +14,6 @@ interface AttendanceRecord {
   Status: string;
   "Waktu Absensi": string;
   "Jenis Absensi": string;
-  "Akurasi Lokasi": string;
-  "Alamat IP": string;
-  "ID Perangkat": string;
 }
 
 interface ClusterAnalysisViewProps {
@@ -34,7 +31,6 @@ export default function ClusterAnalysisView({ data }: ClusterAnalysisViewProps) 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Memoized feature calculation for efficiency
   const calculatedFeatures = useMemo(() => {
     const masukRecords = data.filter(record => record["Jenis Absensi"] === "Masuk");
     if (masukRecords.length === 0) return [];
@@ -42,7 +38,7 @@ export default function ClusterAnalysisView({ data }: ClusterAnalysisViewProps) 
     const statsMap: { [key: string]: any } = {};
     masukRecords.forEach(record => {
       if (!statsMap[record.NRP]) {
-        statsMap[record.NRP] = { record, totalMasuk: 0, totalTerlambat: 0, waktuMasuk: [], ipSet: new Set() };
+        statsMap[record.NRP] = { record, totalMasuk: 0, totalTerlambat: 0, waktuMasuk: [] };
       }
       const stats = statsMap[record.NRP];
       stats.totalMasuk++;
@@ -61,12 +57,11 @@ export default function ClusterAnalysisView({ data }: ClusterAnalysisViewProps) 
         ...stats,
         avgArrivalTime: avgWaktu,
         tardinessRate: tingkatTerlambat,
-        features: [avgWaktu, tingkatTerlambat, stats.totalTerlambat, stats.ipSet.size].map(v => isNaN(v) ? 0 : v)
+        features: [avgWaktu, tingkatTerlambat, stats.totalTerlambat].map(v => isNaN(v) ? 0 : v)
       };
     });
   }, [data]);
 
-  // Effect to run K-Means when data or K changes
   useEffect(() => {
     if (calculatedFeatures.length > 0) {
       setIsLoading(true);
@@ -76,18 +71,23 @@ export default function ClusterAnalysisView({ data }: ClusterAnalysisViewProps) 
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ features: calculatedFeatures.map(f => f.features), k: kValue }),
       })
-      .then(res => {
-        if (!res.ok) return res.json().then(err => { throw new Error(err.error || "API Error") });
+      .then(async (res) => {
+        if (!res.ok) {
+          const errData = await res.json();
+          throw new Error(errData.error || "Gagal menjalankan K-Means.");
+        }
         return res.json();
       })
-      .then(result => setClusterLabels(result.cluster_labels || []))
+      .then(result => {
+        setPersonnelFeatures(calculatedFeatures);
+        setClusterLabels(result.cluster_labels || []);
+      })
       .catch((err: any) => setError(err.message))
       .finally(() => setIsLoading(false));
     }
   }, [calculatedFeatures, kValue]);
-
-  // Memoized data for charts
-  const clusteredData = useMemo(() =>
+  
+  const clusteredData = useMemo(() => 
     personnelFeatures.map((pf, index) => ({
       ...pf,
       cluster: clusterLabels[index],
@@ -95,12 +95,11 @@ export default function ClusterAnalysisView({ data }: ClusterAnalysisViewProps) 
       y: pf.tardinessRate
   })), [personnelFeatures, clusterLabels]);
 
-  if (data.length === 0) return <div className="text-center p-8 text-gray-500">Silakan unggah data untuk memulai analisis.</div>;
   if (isLoading) return <div className="flex justify-center items-center h-96"><Loader2 className="w-10 h-10 animate-spin text-blue-600" /><p className="ml-4">Menganalisis Klaster...</p></div>;
   if (error) return <div className="p-4 bg-red-100 text-red-700 rounded-lg">Error: {error}</div>;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div className="bg-white p-4 rounded-lg shadow-sm">
         <label htmlFor="kValueSelect" className="font-medium text-gray-700 mr-3">Jumlah Klaster (K):</label>
         <select id="kValueSelect" value={kValue} onChange={(e) => setKValue(Number(e.target.value))} className="border-gray-300 rounded-md">
@@ -126,7 +125,6 @@ export default function ClusterAnalysisView({ data }: ClusterAnalysisViewProps) 
   );
 }
 
-// Custom Tooltip component for better stability
 const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
