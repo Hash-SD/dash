@@ -60,8 +60,8 @@ import {
 } from "@/components/ui/sidebar"
 import { Skeleton } from "@/components/ui/skeleton"
 import { parseFileData, calculateFeatures as calculateFeaturesUtil } from "@/lib/dataProcessor" // Impor fungsi utilitas
-import KpiCardsGrid from "@/components/dashboard/KpiCardsGrid"
-import DashboardControls from "@/components/dashboard/DashboardControls"
+import KpiCardsGrid from "@/components/dashboard/KpiCardsGrid" 
+import DashboardControls from "@/components/dashboard/DashboardControls" 
 import ClusterAnalysisView from "@/components/cluster-analysis-view" // Impor ClusterAnalysisView
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8"] // Mungkin tidak lagi dibutuhkan di sini jika hanya dipakai di ClusterAnalysisView
@@ -102,7 +102,7 @@ export default function DashboardTIKPolda() {
 
   // State for frontend visualization of clusters - DIPINDAHKAN ke ClusterAnalysisView
   // const [clusters, setClusters] = useState<ClusterPoint[]>([])
-  // const [clusterCenters, setClusterCenters] = useState<ClusterCenter[]>([])
+  // const [clusterCenters, setClusterCenters] = useState<ClusterCenter[]>([]) 
   // const [selectedCluster, setSelectedCluster] = useState<number | null>(null)
 
   // State for table filters in Cluster Analysis page - DIPINDAHKAN ke ClusterAnalysisView
@@ -145,11 +145,11 @@ export default function DashboardTIKPolda() {
     // } else {
     //   setDashboardState(prev => ({ ...prev, status: 'loading', error: null }));
     // }
-    setDashboardState(prev => ({
-        ...prev,
-        status: 'loading',
-        error: null,
-        // sheetsStatusMessage: showStatusMessage ? "📊 Memuat data dari Google Sheets..." : prev.sheetsStatusMessage
+    setDashboardState(prev => ({ 
+        ...prev, 
+        status: 'loading', 
+        error: null, 
+        // sheetsStatusMessage: showStatusMessage ? "📊 Memuat data dari Google Sheets..." : prev.sheetsStatusMessage 
     }));
 
 
@@ -216,7 +216,7 @@ export default function DashboardTIKPolda() {
           // sheetsStatusMessage: showStatusMessage ? `❌ Gagal memuat data: ${errorMessage}` : null,
         });
       }
-    }
+    } 
     // finally {
       // Logika untuk menghapus sheetsStatusMessage setelah beberapa detik bisa ditambahkan di sini jika diperlukan
       // if (showStatusMessage) {
@@ -261,7 +261,7 @@ export default function DashboardTIKPolda() {
           // setSheetsStatus("❌ File kosong atau format tidak valid setelah parsing.");
           // setTimeout(() => setSheetsStatus(""), 3000);
           alert("File kosong atau format tidak valid setelah parsing."); // Contoh notifikasi sederhana
-          if (fileInputRef.current) fileInputRef.current.value = "";
+          if (fileInputRef.current) fileInputRef.current.value = ""; 
           return;
         }
         
@@ -315,7 +315,7 @@ export default function DashboardTIKPolda() {
         } finally {
           setIsUploadingToSheets(false);
           // setTimeout(() => setSheetsStatus(""), 5000);
-          if (fileInputRef.current) fileInputRef.current.value = "";
+          if (fileInputRef.current) fileInputRef.current.value = ""; 
         }
       } catch (uploadError) {
         console.error("Error during file upload process:", uploadError);
@@ -323,7 +323,7 @@ export default function DashboardTIKPolda() {
         alert(`Error selama proses unggah file: ${uploadError instanceof Error ? uploadError.message : 'Error tidak diketahui'}`);
         setIsUploadingToSheets(false);
         // setTimeout(() => setSheetsStatus(""), 5000);
-        if (fileInputRef.current) fileInputRef.current.value = "";
+        if (fileInputRef.current) fileInputRef.current.value = ""; 
       }
     },
     [loadDataFromSheets, dashboardState.data],  // Menggunakan dashboardState.data sebagai dependensi
@@ -343,7 +343,7 @@ export default function DashboardTIKPolda() {
           // setSheetsStatus("❌ File kosong atau format tidak valid setelah parsing.");
           // setTimeout(() => setSheetsStatus(""), 3000);
            alert("File kosong atau format tidak valid setelah parsing.");
-          if (fileReplaceInputRef.current) fileReplaceInputRef.current.value = "";
+          if (fileReplaceInputRef.current) fileReplaceInputRef.current.value = ""; 
           return;
         }
         
@@ -387,14 +387,14 @@ export default function DashboardTIKPolda() {
         if (fileReplaceInputRef.current) fileReplaceInputRef.current.value = "";
       }
     },
-    [loadDataFromSheets],
+    [loadDataFromSheets], 
   )
 
   const handleClearData = useCallback(() => {
     if (confirm("Apakah Anda yakin ingin menghapus semua data lokal? Data di Google Sheets tidak akan terpengaruh.")) {
       localStorage.removeItem("tikPolda_data")
       localStorage.removeItem("tikPolda_fileName")
-      setDashboardState(prev => ({...prev, data: [], fileName: "", status: prev.data.length > 0 ? 'idle' : prev.status}))
+      setDashboardState(prev => ({...prev, data: [], fileName: "", status: prev.data.length > 0 ? 'idle' : prev.status})) 
       setSelectedDate("")
       // setSheetsStatus("🗑️ Data lokal berhasil dihapus")
       // setTimeout(() => setSheetsStatus(""), 3000)
@@ -403,7 +403,7 @@ export default function DashboardTIKPolda() {
   }, [])
 
   const uploadToSheets = useCallback(async () => {
-    if (dashboardState.data.length === 0) return
+    if (dashboardState.data.length === 0) return 
 
     setIsUploadingToSheets(true)
     // setSheetsStatus("📤 Mengunggah data ke Google Sheets...")
@@ -412,7 +412,7 @@ export default function DashboardTIKPolda() {
       const response = await fetch("/api/sheets", {
         method: "POST",
         headers: { "Content-Type": "application/json", },
-        body: JSON.stringify({ data: dashboardState.data, fileName: dashboardState.fileName }),
+        body: JSON.stringify({ data: dashboardState.data, fileName: dashboardState.fileName }), 
       })
 
       if (!response.ok) {
@@ -431,7 +431,7 @@ export default function DashboardTIKPolda() {
     } finally {
       setIsUploadingToSheets(false)
     }
-  }, [dashboardState.data, dashboardState.fileName])
+  }, [dashboardState.data, dashboardState.fileName]) 
 
   const handlePageChange = useCallback((page: string) => {
     setFadeClass("opacity-0")
@@ -796,7 +796,7 @@ export default function DashboardTIKPolda() {
                   </div>
                 );
               }
-
+              
               // dashboardState.status === 'success' && dashboardState.data.length > 0
               return (
                 <div>
@@ -830,7 +830,7 @@ export default function DashboardTIKPolda() {
                   <DataStats data={dashboardState.data} fileName={dashboardState.fileName} />
 
                   {/* Date Filter - Now a separate component */}
-                  <DashboardControls
+                  <DashboardControls 
                     uniqueDates={uniqueDates}
                     selectedDate={selectedDate}
                     onDateChange={setSelectedDate}
@@ -921,7 +921,7 @@ export default function DashboardTIKPolda() {
                       </ResponsiveContainer>
                     </div>
                   )}
-
+                  
                   {/* Pesan "Belum Ada Data" sudah ditangani oleh kondisi 'idle' atau 'success' dengan data kosong di atas */}
                 </div>
               );
