@@ -8,9 +8,10 @@ import {
 import {
   Upload, BarChart3, Users, RefreshCw, Loader2, Trash2, ScatterChartIcon as Scatter3D
 } from 'lucide-react';
-import { DataStats } from './components/data-stats';
-import InteractiveMap from "@/components/ui/InteractiveMap";
+import { DataStats } from '../data-stats'; // Path diperbaiki
+// import InteractiveMap from "@/components/ui/InteractiveMap"; // Komentar atau hapus impor langsung
 import 'leaflet/dist/leaflet.css';
+import dynamic from 'next/dynamic'; // Impor dynamic
 import {
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent,
   SidebarGroupLabel, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuButton,
@@ -32,6 +33,12 @@ interface AttendanceRecord {
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8"];
 const CLUSTER_NAMES = ["Disiplin Tinggi", "Disiplin Sedang", "Perlu Pembinaan", "Inkonsisten", "Bermasalah"];
+
+// Definisi DynamicInteractiveMap
+const DynamicInteractiveMap = dynamic(() => import('@/components/ui/InteractiveMap'), {
+  ssr: false,
+  loading: () => <p>Memuat peta...</p> // Opsional: tampilkan pesan loading
+});
 
 const BerandaView = ({ data }: { data: AttendanceRecord[] }) => {
   const [selectedDate, setSelectedDate] = useState("");
@@ -68,7 +75,7 @@ const BerandaView = ({ data }: { data: AttendanceRecord[] }) => {
       </div>
       <div className="bg-white p-6 rounded-lg shadow-md">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Peta Sebaran Absensi</h3>
-        <InteractiveMap records={filteredData} selectedDate={selectedDate} />
+        <DynamicInteractiveMap records={filteredData} selectedDate={selectedDate} />
       </div>
       <div className="bg-white p-6 rounded-lg shadow-md">
         <h3 className="text-lg font-semibold mb-4">Distribusi Status Kehadiran</h3>
@@ -185,16 +192,21 @@ export default function DashboardTIKPolda() {
     setIsLoading(true);
     showStatus("Memuat data...");
     try {
-      const response = await fetch("/api/sheets");
-      if (!response.ok) throw new Error("Gagal mengambil data dari server.");
+      // Menggunakan endpoint baru /api/records untuk mengambil semua data
+      // Range default (data-absensi) dan limit (jika ada) akan ditangani oleh backend.
+      const response = await fetch("/api/records");
+      if (!response.ok) {
+        const errorResult = await response.json().catch(() => ({ details: "Unknown error structure" }));
+        throw new Error(`Gagal mengambil data dari server: ${response.statusText} - ${errorResult.details || response.statusText}`);
+      }
       const result = await response.json();
       
       if (result.data && result.data.length > 0) {
         setData(result.data);
-        setFileName("Google Sheets");
-        showStatus(`Berhasil memuat ${result.data.length} baris.`);
+        setFileName("Google Sheets"); // Mungkin bisa mengambil nama file/sheet dari respons jika backend menyediakannya
+        showStatus(result.message || `Berhasil memuat ${result.data.length} baris.`);
       } else {
-        showStatus("Tidak ada data ditemukan.");
+        showStatus(result.message || "Tidak ada data ditemukan.");
       }
     } catch (error: any) {
       showStatus(`Error: ${error.message}`);

@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
-import DashboardClient from "./dashboard-client" // Import the new client component
+// Mengubah impor untuk menggunakan komponen Dashboard utama yang telah dipindahkan
+import DashboardTIKPolda from "@/components/dashboard/DashboardContainer"
 
 export const metadata: Metadata = {
   title: "Dashboard TIK Polda - Beranda",
@@ -20,7 +21,7 @@ export default function HomePage() {
       <h1 className="sr-only">
         Dashboard TIK Polda - Sistem Manajemen Data Kepolisian
       </h1>
-      <DashboardClient />
+      <DashboardTIKPolda />
     </main>
   )
 }
