@@ -110,6 +110,9 @@ importers:
       embla-carousel-react:
         specifier: latest
         version: 8.6.0(react@18.0.0)
+      google-auth-library:
+        specifier: latest
+        version: 10.1.0
       googleapis:
         specifier: latest
         version: 152.0.0
